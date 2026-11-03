@@ -15,7 +15,7 @@
 #include <yarp/os/Value.h>
 
 // opencv
-#include <opencv2/core/core_c.h>
+#include <opencv2/core.hpp>
 
 // iCub
 #include <iCub/ICalibTool.h>
@@ -29,8 +29,8 @@ class SphericalCalibTool : public ICalibTool
 {
 private:
 
-    IplImage        *_mapX;
-    IplImage        *_mapY;
+    cv::Mat         _mapX;
+    cv::Mat         _mapY;
 
     double          _fx, _fx_scaled;
     double          _fy, _fy_scaled;
@@ -43,12 +43,12 @@ private:
 
     bool _needInit;
 
-    CvSize          _calibImgSize;
-    CvSize          _oldImgSize;
+    cv::Size        _calibImgSize;
+    cv::Size        _oldImgSize;
 
     bool _drawCenterCross;
 
-    bool init(CvSize currImgSize, CvSize calibImgSize);
+    bool init(cv::Size currImgSize, cv::Size calibImgSize);
 
 public:
 

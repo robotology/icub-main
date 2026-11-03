@@ -12,9 +12,6 @@
  // std
 #include <stdio.h>
 
-// opencv
-#include <opencv2/core/core_c.h>
-
 // yarp
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>

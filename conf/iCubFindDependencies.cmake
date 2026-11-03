@@ -31,6 +31,16 @@ find_package(icub_firmware_shared QUIET)
 find_package(GSL)
 find_package(GLUT)
 find_package(OpenCV)
+
+# YARP_cv versions built against OpenCV 5 development snapshots can retain
+# opencv_cvv in their transitive link interface even though that module was
+# removed from the final OpenCV 5 package.  Treat the removed, unused module as
+# an empty interface target so consumers of YARP_cv do not fall back to
+# searching for a non-existent -lopencv_cvv.
+if(OpenCV_VERSION VERSION_GREATER_EQUAL 5 AND NOT TARGET opencv_cvv)
+  add_library(opencv_cvv INTERFACE IMPORTED)
+endif()
+
 find_package(OpenGL)
 find_package(SDL)
 find_package(ACE)

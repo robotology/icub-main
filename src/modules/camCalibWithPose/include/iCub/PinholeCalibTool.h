@@ -16,9 +16,8 @@
 #include <math.h>
 
 // opencv
-#include <opencv2/core/core_c.h>
-#include <opencv2/calib3d/calib3d_c.h>
 #include <opencv2/calib3d.hpp>
+#include <opencv2/core.hpp>
 
 // yarp
 //#include <yarp/sig/Image.h>
@@ -39,21 +38,21 @@ class PinholeCalibTool : public ICalibTool
 {
  private:
     
-    CvMat           *_intrinsic_matrix;
-    CvMat           *_intrinsic_matrix_scaled;
-    CvMat           *_distortion_coeffs;;
+    cv::Mat         _intrinsic_matrix;
+    cv::Mat         _intrinsic_matrix_scaled;
+    cv::Mat         _distortion_coeffs;
 
-    IplImage        *_mapUndistortX;
-    IplImage        *_mapUndistortY;
+    cv::Mat         _mapUndistortX;
+    cv::Mat         _mapUndistortY;
 
     bool _needInit;
 
-    CvSize          _calibImgSize;
-    CvSize          _oldImgSize;
+    cv::Size        _calibImgSize;
+    cv::Size        _oldImgSize;
 
     bool _drawCenterCross;
 
-    bool init(CvSize currImgSize, CvSize calibImgSize);
+    bool init(cv::Size currImgSize, cv::Size calibImgSize);
 
 public:
 

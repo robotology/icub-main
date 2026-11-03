@@ -19,6 +19,10 @@
  * Public License for more details
  */
 
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <utility>
 #include <yarp/cv/Cv.h>
 #include <iCub/particleFilter.h>
@@ -45,19 +49,10 @@ int particle_cmp( const void* p1, const void* p2 )
 PARTICLEThread::~PARTICLEThread() 
 {
     cout << "deleting dynamic objects" << endl;
-    if(regions!=NULL)
-        free_regions ( regions, num_objects );
-
     gsl_rng_free ( rng );
     free_histos ( ref_histos, num_objects);  
     if(particles != NULL)
         free ( particles);
-
-    if (temp)
-    {
-        cout << "releasing temp" << endl;        
-        cvReleaseImage(&temp);
-    }
     cout << "finished particle thread" << endl;
 }
 /**********************************************************/
@@ -65,7 +60,6 @@ PARTICLEThread::PARTICLEThread()
 {
     firstFrame = true;
     num_objects = 0;
-    regions = (CvRect **) malloc(sizeof(CvRect*));
     num_particles = PARTICLES;    /* number of particles */
     rng = gsl_rng_alloc( gsl_rng_mt19937 );
     gsl_rng_set( rng, (unsigned long)time(NULL) );
@@ -76,10 +70,9 @@ PARTICLEThread::PARTICLEThread()
     getImage = false;
     particles = NULL;
     new_particles = NULL;
-    temp = NULL;
     ref_histos = NULL;
     tpl = NULL;
-    total = 0;
+    average = 0.0f;
 }
 /**********************************************************/
 void PARTICLEThread::setName(string module) 
@@ -132,24 +125,25 @@ void PARTICLEThread::run()
                 imageIn.getEnvelope(targetTemp);
             }
  
-            frame = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 3 );           
-            cv::cvtColor(toCvMat(*iCubImage), cv::cvarrToMat(frame), CV_RGB2BGR);
-            frame_blob = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 1 );
+            cv::cvtColor(toCvMat(*iCubImage), frame, cv::COLOR_RGB2BGR);
+            frame_blob = cv::Mat::zeros(height, width, CV_8UC1);
 
             if ( tpl != NULL )
             {
                 cv::Mat tplMat=toCvMat(*tpl);
                 tpl_width  = tpl->width();
                 tpl_height = tpl->height();
-                res_width  = width - tpl_width + 1;
-                res_height = height - tpl_height + 1;
-                cvReleaseImage(&temp);
-                temp = cvCreateImage(cvSize(tplMat.size().width,tplMat.size().height),tplMat.depth(),tplMat.channels() );
-                cv::cvtColor(tplMat, cv::cvarrToMat(temp), CV_RGB2BGR);
+                cv::cvtColor(tplMat, temp, cv::COLOR_RGB2BGR);
                 gotTemplate = true;
                 firstFrame = true;
-                if (num_objects>0)
-                    free(*regions);
+                free_histos(ref_histos, num_objects);
+                ref_histos = NULL;
+                if (particles != NULL)
+                {
+                    free(particles);
+                    particles = NULL;
+                }
+                regions.clear();
                 num_objects = 0;
                 delete tpl;
                 tpl = NULL;
@@ -176,18 +170,16 @@ void PARTICLEThread::run()
             {
                 ImageOf<PixelBgr> &img = imageOut.prepare();
                 img.resize(width,height);
-                cv::cvarrToMat(frame).copyTo(toCvMat(img));
+                frame.copyTo(toCvMat(img));
                 imageOut.write();
             }
             if (imageOutBlob.getOutputCount()>0)
             {
                 ImageOf<PixelMono> &imgBlob = imageOutBlob.prepare();
                 imgBlob.resize(width,height);
-                cv::cvarrToMat(frame_blob).copyTo(toCvMat(imgBlob));
+                frame_blob.copyTo(toCvMat(imgBlob));
                 imageOutBlob.write();
             }
-            cvReleaseImage(&frame);
-            cvReleaseImage(&frame_blob);
         }
     } //while
 }
@@ -225,28 +217,29 @@ void PARTICLEThread::initAll()
     init = false;
 }
 /**********************************************************/
-void PARTICLEThread::runAll(IplImage *img)
+void PARTICLEThread::runAll(cv::Mat& img)
 {
     img_hsv = bgr2hsv( img );
     if (firstFrame)
     {
-        w = img->width;
-        h = img->height;
+        w = img.cols;
+        h = img.rows;
             
-        while( num_objects == 0 )
+        num_objects = get_regionsImage(img, regions);
+        if (num_objects == 0)
         {
-            num_objects = get_regionsImage( img, regions );
-            if( num_objects == 0 )
-                fprintf( stderr, "Problem! seg has issues\n" );
-        }   
+            fprintf(stderr, "Unable to initialize the tracker: the template is empty or larger than the input image\n");
+            gotTemplate = false;
+            return;
+        }
         if (ref_histos!=NULL)
             free_histos ( ref_histos, num_objects);        
 
-        ref_histos = compute_ref_histos( img_hsv, *regions, num_objects );
+        ref_histos = compute_ref_histos( img_hsv, regions );
         if (particles != NULL)
             free (particles);
 
-        particles= init_distribution( *regions, ref_histos, num_objects, num_particles );
+        particles= init_distribution( regions, ref_histos, num_objects, num_particles );
     }
     else
     {
@@ -255,10 +248,10 @@ void PARTICLEThread::runAll(IplImage *img)
         {
             particles[j] = transition( particles[j], w, h, rng );
             s = particles[j].s;
-            particles[j].w = likelihood( img_hsv, cvRound(particles[j].y),
-            cvRound( particles[j].x ),
-            cvRound( particles[j].width * s ),
-            cvRound( particles[j].height * s ),
+            particles[j].w = likelihood( img_hsv, static_cast<int>(std::lround(particles[j].y)),
+            static_cast<int>(std::lround( particles[j].x )),
+            static_cast<int>(std::lround( particles[j].width * s )),
+            static_cast<int>(std::lround( particles[j].height * s )),
             particles[j].histo );
         }
         // normalize weights and resample a set of unweighted particles
@@ -270,6 +263,7 @@ void PARTICLEThread::runAll(IplImage *img)
     qsort( particles, num_particles, sizeof( PARTICLEThread::particle ), &particle_cmp );
 
     averageMutex.lock();
+    average = 0.0f;
     for( j = 0; j < num_particles; j++ ) 
         average += particles[j].w;
         
@@ -277,7 +271,7 @@ void PARTICLEThread::runAll(IplImage *img)
     averageMutex.unlock();
 
     //display most likely particle ------------------
-    color = cvScalar(255,0,0);
+    color = cv::Scalar(255,0,0);
     targetMutex.lock();
     targetTemp.clear();
     //if (imageOut.getOutputCount()>0)
@@ -287,8 +281,6 @@ void PARTICLEThread::runAll(IplImage *img)
         display_particleBlob( frame_blob, particles[0], targetTemp );
     targetMutex.unlock();
     trace_template( frame, particles[0] );
-
-    cvReleaseImage(&img_hsv);
 }
 /**********************************************************/
 void PARTICLEThread::setTemplate(ImageOf<PixelRgb> *_tpl)
@@ -313,64 +305,41 @@ float PARTICLEThread::getAverage()
     return tmpAv;
 }
 /**********************************************************/
-int PARTICLEThread::get_regionsImage( IplImage* frame, CvRect** regions ) 
+int PARTICLEThread::get_regionsImage( const cv::Mat& frame, std::vector<cv::Rect>& regions )
 {
     firstFrame = false;
-    params p;
-    CvRect* r;
-    int i; //x1, y1, x2, y2, w, h;
+    if (temp.empty() || temp.cols > frame.cols || temp.rows > frame.rows)
+        return 0;
 
-    p.orig_img = cvCloneImage( frame );
-    p.cur_img = NULL;
-    p.n = 0;
+    cv::Mat result;
+    cv::matchTemplate(frame, temp, result, cv::TM_SQDIFF);
 
-    res = cvCreateImage( cvSize( res_width, res_height ), IPL_DEPTH_32F, 1 );
+    cv::Point minloc;
+    cv::minMaxLoc(result, nullptr, nullptr, &minloc, nullptr);
 
-    cvMatchTemplate( frame, temp, res, CV_TM_SQDIFF );
-    cvMinMaxLoc( res, &minval, &maxval, &minloc, &maxloc, 0 );
-
-    cvReleaseImage( &(p.orig_img) );    //what was the purpose of this image?
-    cvReleaseImage( &res );
-    if( p.cur_img )
-        cvReleaseImage( &(p.cur_img) );
-    p.n = 1;
-    // extract regions defined by user; store as an array of rectangles ----------
-    
-    r = (CvRect*) malloc ( p.n * sizeof( CvRect ) );
-
-    for( i = 0; i < p.n; i++ )
-        r[i] = cvRect( minloc.x, minloc.y, tpl_width, tpl_height );
-        
-    *regions = r;
-    
-    return p.n;
+    regions.clear();
+    regions.emplace_back(minloc.x, minloc.y, tpl_width, tpl_height);
+    return static_cast<int>(regions.size());
 }
 /**********************************************************/
-PARTICLEThread::histogram** PARTICLEThread::compute_ref_histos( IplImage* frame, CvRect* regions, int n )
+PARTICLEThread::histogram** PARTICLEThread::compute_ref_histos(const cv::Mat& frame,
+                                                               const std::vector<cv::Rect>& regions)
 {
-    histogram** histos = (histogram**) malloc( n * sizeof( histogram* ) );
-    IplImage* tmp;
-    int i;
+    histogram** histos = (histogram**) malloc(regions.size() * sizeof(histogram*));
 
     // extract each region from frame and compute its histogram 
-    for( i = 0; i < n; i++ )
+    for(size_t i = 0; i < regions.size(); i++)
     {
-        cvSetImageROI( frame, regions[i]);
-        tmp = cvCreateImage( cvGetSize(frame), IPL_DEPTH_32F, 3 );
-        cvCopy( frame, tmp, NULL );
-        cvResetImageROI( frame );
+        cv::Mat tmp = frame(regions[i]).clone();
         histos[i] = calc_histogram( &tmp, 1 );
         normalize_histogram( histos[i] );
-        cvReleaseImage( &tmp );
     }
     return histos;
 }
 /**********************************************************/
-PARTICLEThread::histogram* PARTICLEThread::calc_histogram( IplImage** imgs, int n ) 
+PARTICLEThread::histogram* PARTICLEThread::calc_histogram(const cv::Mat* imgs, int n)
 {
-    IplImage* img;
     histogram* histo;
-    IplImage* h, * s, * v;
     float* hist;
     int i, r, c, bin;
     histo = (histogram*) malloc( sizeof(histogram) );
@@ -379,43 +348,27 @@ PARTICLEThread::histogram* PARTICLEThread::calc_histogram( IplImage** imgs, int 
     memset( hist, 0, histo->n * sizeof(float) );
     for( i = 0; i < n; i++ )
     {
-        // extract individual HSV planes from image 
-        img = imgs[i];
-        h = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1 );
-        s = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1 );
-        v = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1 );
-        cvSplit( img, h, s, v, NULL );
-
         // increment appropriate histogram bin for each pixel 
-        for( r = 0; r < img->height; r++ )
-            for( c = 0; c < img->width; c++ )
+        for( r = 0; r < imgs[i].rows; r++ )
+            for( c = 0; c < imgs[i].cols; c++ )
             {
-                bin = histo_bin( pixval32f( h, r, c ),
-                pixval32f( s, r, c ),
-                pixval32f( v, r, c ) );
+                const cv::Vec3f& pixel = imgs[i].at<cv::Vec3f>(r, c);
+                bin = histo_bin(pixel[0], pixel[1], pixel[2]);
                 hist[bin] += 1;
             }
-        cvReleaseImage( &h );
-        cvReleaseImage( &s );
-        cvReleaseImage( &v );
     }
     return histo;
 }
 /**********************************************************/
 void PARTICLEThread::free_histos( PARTICLEThread::histogram** histo, int n) 
 {
+    if (histo == NULL)
+        return;
+
     for (int i = 0; i < n; i++)    
         free (histo[i]);
 
     free(histo);
-}
-/**********************************************************/
-void PARTICLEThread::free_regions( CvRect** regions, int n) 
-{
-    for (int i = 0; i < n; i++)    
-        free (regions[i]);
-
-   free(regions);
 }
 /**********************************************************/
 void PARTICLEThread::normalize_histogram( PARTICLEThread::histogram* histo ) 
@@ -440,17 +393,20 @@ int PARTICLEThread::histo_bin( float h, float s, float v )
     int hd, sd, vd;
 
     // if S or V is less than its threshold, return a "colorless" bin 
-    vd = MIN( (int)(v * NV / V_MAX), NV-1 );
+    vd = std::min( (int)(v * NV / V_MAX), NV-1 );
     if( s < S_THRESH  ||  v < V_THRESH )
         return NH * NS + vd;
 
     // otherwise determine "colorful" bin 
-    hd = MIN( (int)(h * NH / H_MAX), NH-1 );
-    sd = MIN( (int)(s * NS / S_MAX), NS-1 );
+    hd = std::min( (int)(h * NH / H_MAX), NH-1 );
+    sd = std::min( (int)(s * NS / S_MAX), NS-1 );
     return sd * NH + hd;
 }
 /**********************************************************/
-PARTICLEThread::particle* PARTICLEThread::init_distribution( CvRect* regions, histogram** histos, int n, int p) 
+PARTICLEThread::particle* PARTICLEThread::init_distribution(const std::vector<cv::Rect>& regions,
+                                                            histogram** histos,
+                                                            int n,
+                                                            int p)
 {
     particle* particles;
     int np;
@@ -505,13 +461,13 @@ PARTICLEThread::particle PARTICLEThread::transition( const PARTICLEThread::parti
     // sample new state using second-order autoregressive dynamics 
     x = pfot_A1 * ( p.x - p.x0 ) + pfot_A2 * ( p.xp - p.x0 ) +
     pfot_B0 * (float)(gsl_ran_gaussian( rng, TRANS_X_STD )) + p.x0;
-    pn.x = MAX( 0.0f, MIN( (float)w - 1.0f, x ) );
+    pn.x = std::max( 0.0f, std::min( (float)w - 1.0f, x ) );
     y = pfot_A1 * ( p.y - p.y0 ) + pfot_A2 * ( p.yp - p.y0 ) +
     pfot_B0 * (float)(gsl_ran_gaussian( rng, TRANS_Y_STD )) + p.y0;
-    pn.y = MAX( 0.0f, MIN( (float)h - 1.0f, y ) );
+    pn.y = std::max( 0.0f, std::min( (float)h - 1.0f, y ) );
     s = pfot_A1 * ( p.s - 1.0f ) + pfot_A2 * ( p.sp - 1.0f ) +
     pfot_B0 * (float)(gsl_ran_gaussian( rng, TRANS_S_STD )) + 1.0f;
-    pn.s = MAX( 0.1f, s );
+    pn.s = std::max( 0.1f, s );
 
     pn.xp = p.x;
     pn.yp = p.y;
@@ -526,19 +482,19 @@ PARTICLEThread::particle PARTICLEThread::transition( const PARTICLEThread::parti
     return pn;
 }
 /**********************************************************/
-float PARTICLEThread::likelihood( IplImage* img, int r, int c, int w, int h, histogram* ref_histo ) 
+float PARTICLEThread::likelihood(const cv::Mat& img, int r, int c, int w, int h, histogram* ref_histo)
 {
-    IplImage* tmp;
     histogram* histo;
     float d_sq;
 
     // extract region around (r,c) and compute and normalize its histogram 
-    cvSetImageROI( img, cvRect( c - w / 2, r - h / 2, w, h ) );
-    tmp = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 3 );
-    cvCopy( img, tmp, NULL );
-    cvResetImageROI( img );
+    cv::Rect region(c - w / 2, r - h / 2, w, h);
+    region &= cv::Rect(0, 0, img.cols, img.rows);
+    if (region.empty())
+        return 0.0f;
+
+    cv::Mat tmp = img(region).clone();
     histo = calc_histogram( &tmp, 1 );
-    cvReleaseImage( &tmp );
     normalize_histogram( histo );
 
     // compute likelihood as e^{\lambda D^2(h, h^*)} 
@@ -579,6 +535,15 @@ void PARTICLEThread::normalize_weights( particle* particles, int n )
 
     for( i = 0; i < n; i++ )
         sum += particles[i].w;
+
+    if (sum <= 0.0f)
+    {
+        const float uniform_weight = 1.0f / n;
+        for (i = 0; i < n; i++)
+            particles[i].w = uniform_weight;
+        return;
+    }
+
     for( i = 0; i < n; i++ )
         particles[i].w /= sum;
 }
@@ -594,7 +559,7 @@ PARTICLEThread::particle* PARTICLEThread::resample( particle* particles, int n )
 
     for( i = 0; i < n; i++ ) 
     {
-        np = cvRound( particles[i].w * n );
+        np = static_cast<int>(std::lround( particles[i].w * n ));
         for( j = 0; j < np; j++ ) 
         {
             _new_particles[k++] = particles[i];
@@ -609,19 +574,22 @@ PARTICLEThread::particle* PARTICLEThread::resample( particle* particles, int n )
     return _new_particles;
 }
 /**********************************************************/
-void PARTICLEThread::display_particle( IplImage* img, const PARTICLEThread::particle &p, CvScalar color, Vector& target ) 
+void PARTICLEThread::display_particle(cv::Mat& img,
+                                      const PARTICLEThread::particle &p,
+                                      const cv::Scalar& color,
+                                      Vector& target)
 {
     int x0, y0, x1, y1;
-    x0 = cvRound( p.x - 0.5 * p.s * p.width );
-    y0 = cvRound( p.y - 0.5 * p.s * p.height );
-    x1 = x0 + cvRound( p.s * p.width );
-    y1 = y0 + cvRound( p.s * p.height );
+    x0 = static_cast<int>(std::lround( p.x - 0.5 * p.s * p.width ));
+    y0 = static_cast<int>(std::lround( p.y - 0.5 * p.s * p.height ));
+    x1 = x0 + static_cast<int>(std::lround( p.s * p.width ));
+    y1 = y0 + static_cast<int>(std::lround( p.s * p.height ));
 
-    cvRectangle( img, cvPoint( x0, y0 ), cvPoint( x1, y1 ), color, 1, 8, 0 );
+    cv::rectangle(img, cv::Point(x0, y0), cv::Point(x1, y1), color, 1, cv::LINE_8);
     
-    cvCircle (img, cvPoint((x0+x1)/2, (y0+y1)/2), 3, cvScalar(255,0 ,0),1);
-    cvCircle (img, cvPoint( x0, y0), 3, cvScalar(0, 255 ,0),1);
-    cvCircle (img, cvPoint( x1, y1), 3, cvScalar(0, 255 ,0),1);
+    cv::circle(img, cv::Point((x0+x1)/2, (y0+y1)/2), 3, cv::Scalar(255,0,0), 1);
+    cv::circle(img, cv::Point(x0, y0), 3, cv::Scalar(0,255,0), 1);
+    cv::circle(img, cv::Point(x1, y1), 3, cv::Scalar(0,255,0), 1);
 
     target.push_back((x0+x1)/2);
     target.push_back((y0+y1)/2);
@@ -631,51 +599,45 @@ void PARTICLEThread::display_particle( IplImage* img, const PARTICLEThread::part
     target.push_back(y1);
 }
 /**********************************************************/
-void PARTICLEThread::display_particleBlob( IplImage* img, const PARTICLEThread::particle &p, Vector& target ) 
+void PARTICLEThread::display_particleBlob(cv::Mat& img,
+                                          const PARTICLEThread::particle &p,
+                                          Vector& target)
 {
     int x0, y0, x1, y1;
-    x0 = cvRound( p.x - 0.5 * p.s * p.width );
-    y0 = cvRound( p.y - 0.5 * p.s * p.height );
-    x1 = x0 + cvRound( p.s * p.width );
-    y1 = y0 + cvRound( p.s * p.height );
+    x0 = static_cast<int>(std::lround( p.x - 0.5 * p.s * p.width ));
+    y0 = static_cast<int>(std::lround( p.y - 0.5 * p.s * p.height ));
+    x1 = x0 + static_cast<int>(std::lround( p.s * p.width ));
+    y1 = y0 + static_cast<int>(std::lround( p.s * p.height ));
 
-    int step       = img->widthStep/sizeof(uchar);
-    uchar* data    = (uchar *)img->imageData;
-    
-    for (int i=0; i<img->height; i++)
-    {
-        for (int j=0; j<img->width; j++)
-        {   
-            data[i*step+j] = 0;
-        }
-    }
-    cvRectangle(img, cvPoint(x0,y0), cvPoint(x1,y1), cvScalar(255,255, 255), CV_FILLED);
+    img.setTo(cv::Scalar(0));
+    cv::rectangle(img, cv::Point(x0, y0), cv::Point(x1, y1), cv::Scalar(255), cv::FILLED);
 }
 /**********************************************************/
-void PARTICLEThread::trace_template( IplImage* img, const particle &p )
+void PARTICLEThread::trace_template(const cv::Mat& img, const particle &p)
 {
     if (p.w>TEMP_LIST_PARTICLE_THRES_HIGH)
     {
-        //create the template image
-        TemplateStruct t;
-        t.w=p.w;
-        t.templ=new ImageOf<PixelRgb>;
-        t.templ->resize(cvRound(p.s*p.width),cvRound(p.s*p.height));
-
-        cv::Mat imgMat(cv::cvarrToMat(img),cv::Rect(cvRound(p.x-0.5*p.s*p.width),
-                                                    cvRound(p.y-0.5*p.s*p.height),
-                                                    cvRound(p.s*p.width),
-                                                    cvRound(p.s*p.height)));
-
-        cv::cvtColor(imgMat,toCvMat(*t.templ),CV_BGR2RGB);
-
-        cvResetImageROI(img);
-
-        tempList.push_front(t);
-        if (tempList.size()>TEMP_LIST_SIZE)
+        cv::Rect region(static_cast<int>(std::lround(p.x - 0.5 * p.s * p.width)),
+                        static_cast<int>(std::lround(p.y - 0.5 * p.s * p.height)),
+                        static_cast<int>(std::lround(p.s * p.width)),
+                        static_cast<int>(std::lround(p.s * p.height)));
+        region &= cv::Rect(0, 0, img.cols, img.rows);
+        if (!region.empty())
         {
-            delete tempList.back().templ;
-            tempList.pop_back();
+            //create the template image
+            TemplateStruct t;
+            t.w=p.w;
+            t.templ=new ImageOf<PixelRgb>;
+            t.templ->resize(region.width, region.height);
+
+            cv::cvtColor(img(region), toCvMat(*t.templ), cv::COLOR_BGR2RGB);
+
+            tempList.push_front(t);
+            if (tempList.size()>TEMP_LIST_SIZE)
+            {
+                delete tempList.back().templ;
+                tempList.pop_back();
+            }
         }
     }
     //keep in check the best template
@@ -709,20 +671,13 @@ void PARTICLEThread::trace_template( IplImage* img, const particle &p )
     }
 }
 /**********************************************************/
-float PARTICLEThread::pixval32f(IplImage* img, int r, int c) 
+cv::Mat PARTICLEThread::bgr2hsv(const cv::Mat& bgr)
 {
-    return ( (float*)(img->imageData + img->widthStep*r) )[c];
-}
-/**********************************************************/
-IplImage* PARTICLEThread::bgr2hsv( IplImage* bgr ) 
-{
-    IplImage* bgr32f, * hsv;
+    cv::Mat bgr32f;
+    cv::Mat hsv;
 
-    bgr32f = cvCreateImage( cvGetSize(bgr), IPL_DEPTH_32F, 3 );
-    hsv = cvCreateImage( cvGetSize(bgr), IPL_DEPTH_32F, 3 );
-    cvConvertScale( bgr, bgr32f, 1.0 / 255.0, 0 );
-    cvCvtColor( bgr32f, hsv, CV_BGR2HSV );
-    cvReleaseImage( &bgr32f );
+    bgr.convertTo(bgr32f, CV_32FC3, 1.0 / 255.0);
+    cv::cvtColor(bgr32f, hsv, cv::COLOR_BGR2HSV);
     return hsv;
 }
 /**********************************************************/
@@ -967,5 +922,3 @@ double PARTICLEModule::getPeriod()
 {
     return 0.1;
 }
-
-
