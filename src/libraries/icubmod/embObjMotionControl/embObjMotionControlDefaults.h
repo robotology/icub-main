@@ -83,6 +83,7 @@ static constexpr std::string_view n_a      = "n_a";
 static constexpr std::string_view pwm      = "pwm";
 static constexpr std::string_view velocity = "velocity";
 static constexpr std::string_view current  = "current";
+static constexpr std::string_view vel_cur  = "vel_cur"; //velocity with inner current loop
 } // namespace outputType
 
 } // namespace ParamValues

@@ -60,9 +60,13 @@ static const std::map<std::string, CtrlOutTypeInfo> ctrlOutTypeConfigMap =
     {std::string(eomc::ParamValues::outputType::n_a),      {eomc_ctrl_out_type_n_a,  "Not applicable / Not set"}},
     {std::string(eomc::ParamValues::outputType::pwm),      {eomc_ctrl_out_type_pwm,  "PWM (Pulse Width Modulation)"}},
     {std::string(eomc::ParamValues::outputType::velocity), {eomc_ctrl_out_type_vel_pwm,  "Velocity control output"}},
-    {std::string(eomc::ParamValues::outputType::current),  {eomc_ctrl_out_type_cur,  "Current control output"}}
+    {std::string(eomc::ParamValues::outputType::current),  {eomc_ctrl_out_type_cur,  "Current control output"}},
+    {std::string(eomc::ParamValues::outputType::vel_cur),  {eomc_ctrl_out_type_vel_cur,  "Velocity control output with inner current loop"}}
 };
-#warning VALE
+/** @brief A map of control output types from configuration strings to their enum values and descriptions. 
+ * NOTE: in this map the velocity output is mapped to eomc_ctrl_out_type_vel_pwm, and in the parse of velocitydirect control there is a check for the output required. 
+ * If it is current, then the parse changes the output type to eomc_ctrl_out_type_vel_cur, otherwise it remains eomc_ctrl_out_type_vel_pwm. 
+*/
 
 // Helper function to get control output type from configuration string
 bool getCtrlOutTypeFromConfig(const std::string &configName, eOmc_ctrl_out_type_t &outType, std::string &description)
@@ -576,7 +580,9 @@ bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config, std::vec
             case eomc_ctrl_out_type_vel_cur:
                 parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
                 break;
-                #warning VALE2
+            default:
+                yError() << "embObjMC BOARD " << _boardname << "Unsupported output type for position control group " << groupName.c_str() << ". Quitting.";
+                return false;      
         }
         if(!parseOk)
         {
@@ -686,6 +692,9 @@ bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config, std::vec
             case eomc_ctrl_out_type_vel_cur:
                 parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
                 break;
+            default:
+                yError() << "embObjMC BOARD " << _boardname << "Unsupported output type for position control group " << groupName.c_str() << ". Quitting.";
+                return false;
         }
         if(!parseOk)
         {
@@ -805,6 +814,9 @@ bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config, std::vector
             case eomc_ctrl_out_type_vel_cur :
                 parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
                 break;
+            default:
+                yError() << "embObjMC BOARD " << _boardname << "Unsupported output type for position control group " << groupName.c_str() << ". Quitting.";
+                return false;
         }
         if(!parseOk)
         {
@@ -916,6 +928,9 @@ bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config, st
             case eomc_ctrl_out_type_vel_cur:
                 parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
                 break;
+            default:
+                yError() << "embObjMC BOARD " << _boardname << "Unsupported output type for position control group " << groupName.c_str() << ". Quitting.";
+                return false;
         }
         if(!parseOk)
         {
@@ -972,7 +987,6 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config, st
         }
         
         registerOptionalParameter("velocity direct pid", "0.0 for all pid values", false);
-        //yWarning() << "embObjMC BOARD " << _boardname << "velocity direct pid has been disabled";
         return true;
     }
 
@@ -1131,6 +1145,9 @@ bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config,  std::vect
             case eomc_ctrl_out_type_vel_pwm:
                 parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
                 break;
+            default:
+                yError() << "embObjMC BOARD " << _boardname << "Unsupported output type for position control group " << groupName.c_str() << ". Quitting.";
+                return false;
         }
         if(!parseOk)
         {
@@ -1479,7 +1496,7 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, std::vector<focBasedSpe
     }
 
     std::vector<float> Kbemf (_njoints);
-    if (!extractGroup(focGroup, xtmp, "Kbemf", "Kbemf", _njoints, true))
+    if (!extractGroup(focGroup, xtmp, "kbemf", "Kbemf", _njoints, true))
     {
         yError() << "In " << _boardname << " missing param Kbemf";
         return false;

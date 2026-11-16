@@ -2985,19 +2985,48 @@ ReturnValue embObjMotionControl::stopRaw(const int n_joint, const int *joints)
 
 // ControlMode
 
+typedef struct
+{
+    std::vector<PidInfo>    trj;
+    std::vector<PidInfo>    mix;
+    std::vector<PidInfo>    dir_pos;
+    std::vector<PidInfo>    dir_vel;
+    std::vector<TrqPidInfo> trq;
+    std::vector<PidInfo>    cur;
+    std::vector<PidInfo>    vel;
+} PidControllers_t;
+
 ReturnValue embObjMotionControl::getAvailableControlModesRaw(int j, std::vector<yarp::dev::SelectableControlModeEnum>& avail)
 {
     avail.clear();
-    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
-    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION_DIRECT);
-    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY_DIRECT);
-    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY);
-    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_TORQUE);
-    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_MIXED);
+    if (_parsedCfgData.pidControllers.trj[j].enabled)
+        avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
+
+    if (_parsedCfgData.pidControllers.mix[j].enabled)
+        avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_MIXED);
+
+    if (_parsedCfgData.pidControllers.dir_pos[j].enabled)
+        avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION_DIRECT);
+
+    if (_parsedCfgData.pidControllers.dir_vel[j].enabled)
+        avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY_DIRECT);
+
+    
+    if (_parsedCfgData.pidControllers.trq[j].enabled)
+        avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_TORQUE);
+
+    if( _parsedCfgData.pidControllers.cur[j].enabled)
+        avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_CURRENT);
+    
+    if( _parsedCfgData.pidControllers.vel[j].enabled)
+        avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY);
+
+
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_IMPEDANCE_POS);
     avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_PWM);
     avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE);
     avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_FORCE_IDLE);
-    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_CURRENT);
+
     return ReturnValue_ok;
 }
 

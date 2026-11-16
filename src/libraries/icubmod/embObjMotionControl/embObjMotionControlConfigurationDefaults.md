@@ -52,6 +52,7 @@ All tokens are defined as `constexpr std::string_view` in `namespace yarp::dev::
 | PWM                      | `pwm`        | `ParamValues::outputType::pwm`      |
 | Velocity                 | `velocity`   | `ParamValues::outputType::velocity` |
 | Current                  | `current`    | `ParamValues::outputType::current`  |
+| Velociy-current          | `vel_cur`    | `ParamValues::outputType::vel_cur`  |
 
 ### 2.5 Temperature sensor type (`ParamValues::temperatureSensor`)
 

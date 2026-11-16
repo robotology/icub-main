@@ -343,27 +343,6 @@ namespace yarp {
         return 0;
     
     }
-    /*
-    eOmc_pidoutputtype_t pidOutputTypeConver_eomc2fw(PidAlgorithmType_t controlLaw)
-    {
-        switch(controlLaw)
-        {
-            case PidAlgo_simple:
-                return(eomc_pidoutputtype_pwm);
-                
-            case PIdAlgo_velocityInnerLoop:
-                return(eomc_pidoutputtype_vel);
-                
-            case PidAlgo_currentInnerLoop:
-                return(eomc_pidoutputtype_iqq);
-            default:
-            {
-                yError() << "pidOutputTypeConver_eomc2fw: unknown pid output type" ;
-                return(eomc_pidoutputtype_unknown);
-            }
-        }
-    }
-    */
     
     bool interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut)
     {

@@ -184,7 +184,6 @@ void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *
     uint64_t curr_time_us;
     uint64_t diff_ms = 0;
     embObjMotionControl *tmp = (embObjMotionControl *)(_interface2ethManager->getHandleFromEP(id->ep));
-#warning "check_received_debug_data"
 
     if(!((tmp->getFeat_id().boardNum == 6) || (tmp->getFeat_id().boardNum == 8)))
         return;
