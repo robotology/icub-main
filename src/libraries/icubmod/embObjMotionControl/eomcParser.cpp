@@ -1496,7 +1496,7 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, std::vector<focBasedSpe
     }
 
     std::vector<float> Kbemf (_njoints);
-    if (!extractGroup(focGroup, xtmp, "kbemf", "Kbemf", _njoints, true))
+    if (!extractGroup(focGroup, xtmp, "Kbemf", "Kbemf", _njoints, true))
     {
         yError() << "In " << _boardname << " missing param Kbemf";
         return false;

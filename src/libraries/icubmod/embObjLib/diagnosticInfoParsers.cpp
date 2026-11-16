@@ -795,7 +795,7 @@ void MotionControlParser::parseInfo()
         
         case eoerror_value_MC_motor_wrong_state: //TBD: create a function to convert state to string
         {
-            #warning TODO: create a function to convert state to string
+            //#warning TODO: create a function to convert state to string
             uint16_t joint_num = m_dnginfo.param16;
             uint16_t req_state = (m_dnginfo.param64 & 0xff00)>>8;
             uint16_t cur_state = m_dnginfo.param64 & 0xff;
