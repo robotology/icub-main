@@ -374,7 +374,6 @@ public:
         joints.resize(0);
         cfg.candotorquecontrol = 0;
         cfg.usespeedfeedbackfrommotors = 0;
-        cfg.pidoutputtype = eomc_pidoutputtype_unknown;
         cfg.dummy = 0;
         cfg.constraints.type = eomc_jsetconstraint_unknown;
         cfg.constraints.param1 = 0;
@@ -384,7 +383,6 @@ public:
     int getNumberofJoints(void) { return joints.size(); }
     eOmc_jointset_configuration_t* getConfiguration(void) { return &cfg; }
     void setUseSpeedFeedbackFromMotors(bool flag) { cfg.usespeedfeedbackfrommotors = flag; }
-    void setPidOutputType(eOmc_pidoutputtype_t type) { cfg.pidoutputtype = type; }
     void setCanDoTorqueControl(bool flag) { cfg.candotorquecontrol = flag; }
     void dumpdata();
 };
