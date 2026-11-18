@@ -18,6 +18,7 @@
  */
 
 //here there is only a name space that contains all utils funtion of embObjMotionControl
+#include <string>
 
 namespace yarp {
     namespace dev  {
@@ -81,48 +82,48 @@ namespace yarp {
                     return int(x - .5);
     }
     
-    bool EncoderType_iCub2eo(const string* in, uint8_t *out)
-    {
-        if (*in == "NONE")
-        {
-            *out = 0;
-            return true;
-        }
-        else if (*in == "AEA")
-        {
-            *out = 1;
-            return true;
-        }
-        else if (*in == "ROIE")
-        {
-            *out = 2;
-            return true;
-        }
-        else if (*in == "HALL_ADC")
-        {
-            *out = 3;
-            return true;
-        }
-        else if (*in == "MAIS")
-        {
-            *out = 4;
-            return true;
-        }
-        else if (*in == "OPTICAL_QUAD")
-        {
-            *out = 5;
-            return true;
-        }
-        else if (*in == "HALL_MOTOR_SENS")
-        {
-            *out = 6;
-            return true;
-        }
-        *out = 0;
-        return false;
-    }
+    // bool EncoderType_iCub2eo(const std::string* in, uint8_t *out)
+    // {
+    //     if (*in == "NONE")
+    //     {
+    //         *out = 0;
+    //         return true;
+    //     }
+    //     else if (*in == "AEA")
+    //     {
+    //         *out = 1;
+    //         return true;
+    //     }
+    //     else if (*in == "ROIE")
+    //     {
+    //         *out = 2;
+    //         return true;
+    //     }
+    //     else if (*in == "HALL_ADC")
+    //     {
+    //         *out = 3;
+    //         return true;
+    //     }
+    //     else if (*in == "MAIS")
+    //     {
+    //         *out = 4;
+    //         return true;
+    //     }
+    //     else if (*in == "OPTICAL_QUAD")
+    //     {
+    //         *out = 5;
+    //         return true;
+    //     }
+    //     else if (*in == "HALL_MOTOR_SENS")
+    //     {
+    //         *out = 6;
+    //         return true;
+    //     }
+    //     *out = 0;
+    //     return false;
+    // }
     
-    bool EncoderType_eo2iCub(const uint8_t *in, string* out)
+    bool EncoderType_eo2iCub(const uint8_t *in, std::string* out)
     {
         if (*in == 0)
         {
@@ -179,8 +180,6 @@ namespace yarp {
         out->offset = (float) (in->offset);
         out->scale = (int8_t) (in->scale);
         out->kff = (float) (in->kff);
-        out->stiction_down_val = (float)(in->stiction_down_val);
-        out->stiction_up_val = (float)(in->stiction_up_val);
     }
     
     void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
@@ -193,11 +192,10 @@ namespace yarp {
         out->max_output = (double) in->limitonoutput;
         out->offset = (double) in->offset;
         out->scale = (double) in->scale;
-        out->setStictionValues(in->stiction_up_val, in->stiction_down_val);
+        out->setStictionValues(0.0, 0.0);
         out->setKff(in->kff);
     }
-    
-    
+        
     bool controlModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut)
     {
         bool ret = true;
@@ -220,6 +218,10 @@ namespace yarp {
                 embOut = eomc_controlmode_cmd_velocity;
                 break;
                 
+            case VOCAB_CM_VELOCITY_DIRECT:
+                embOut = eomc_controlmode_cmd_vel_direct;
+                break;
+
             case VOCAB_CM_MIXED:
                 embOut = eomc_controlmode_cmd_mixed;
                 break;
@@ -272,6 +274,10 @@ namespace yarp {
                 vocabOut = VOCAB_CM_VELOCITY;
                 break;
                 
+            case eomc_controlmode_cmd_vel_direct:
+                vocabOut = VOCAB_CM_VELOCITY_DIRECT;
+                break;
+
             case eomc_controlmode_direct:
                 vocabOut = VOCAB_CM_POSITION_DIRECT;
                 break;
@@ -318,8 +324,8 @@ namespace yarp {
                 break;
                 
             default:
-                printf("embObj to yarp unknown controlmode %d\n", embObjMode);
                 vocabOut = VOCAB_CM_UNKNOWN;
+                yError() << "Received an unknown controlMode from the EMS boards with value " << (int)embObjMode;
                 break;
         }
         return vocabOut;
@@ -337,27 +343,6 @@ namespace yarp {
         return 0;
     
     }
-    /*
-    eOmc_pidoutputtype_t pidOutputTypeConver_eomc2fw(PidAlgorithmType_t controlLaw)
-    {
-        switch(controlLaw)
-        {
-            case PidAlgo_simple:
-                return(eomc_pidoutputtype_pwm);
-                
-            case PIdAlgo_velocityInnerLoop:
-                return(eomc_pidoutputtype_vel);
-                
-            case PidAlgo_currentInnerLoop:
-                return(eomc_pidoutputtype_iqq);
-            default:
-            {
-                yError() << "pidOutputTypeConver_eomc2fw: unknown pid output type" ;
-                return(eomc_pidoutputtype_unknown);
-            }
-        }
-    }
-    */
     
     bool interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut)
     {

@@ -153,7 +153,7 @@ void VisuoThread::startTracker(const Vector &stereo, const int &side)
         int height=stereo[2*eye_in_use+1]+0.5*side>=imgMat.rows?imgMat.rows-y:side;
         
         imgMat(cv::Rect(x,y,width,height)).copyTo(tplMat);
-        cv::cvtColor(tplMat,tplMat,CV_BGR2RGB);
+        cv::cvtColor(tplMat,tplMat,cv::COLOR_BGR2RGB);
 
         pftOutPort.write(tpl);
     }

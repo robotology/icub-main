@@ -942,6 +942,11 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             size_t tmp = b_PROPERTIES_SENSORS_id.size();
             int numsensors = tmp - 1;    // first position of bottle contains the tag "id"
 
+            if((false == b_PROPERTIES_SENSORS_sensorName.isNull()) && (b_PROPERTIES_SENSORS_sensorName.size() != tmp))
+            {
+                yWarning() << "ServiceParser::check_analog() PROPERTIES.SENSORS.sensorName has inconsistent length. Missing values will fallback to SENSORS.id";
+            }
+
             // check if all other fields have the same size.
             if( (tmp != b_PROPERTIES_SENSORS_type.size()) ||
                 (tmp != b_PROPERTIES_SENSORS_location.size()) ||
@@ -970,7 +975,15 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 }
                 if(!b_PROPERTIES_SENSORS_sensorName.isNull())
                 {
-                   convert(b_PROPERTIES_SENSORS_sensorName.get(i+1).asString(), item.sensorName, formaterror);
+                    // sensorName is optional: keep parsing robust and fallback to id if missing or empty.
+                    if((i + 1) < b_PROPERTIES_SENSORS_sensorName.size())
+                    {
+                        item.sensorName = b_PROPERTIES_SENSORS_sensorName.get(i+1).asString();
+                    }
+                }
+                if(item.sensorName.empty())
+                {
+                    item.sensorName = "Not configured (optional)";
                 }
                 if((eomn_serv_AS_inertials3 == type) || (eomn_serv_AS_pos == type))
                 {
@@ -2717,14 +2730,10 @@ bool ServiceParser::parse_POS_CALIB_rotation(std::string const &fromstring, eoas
     eObool_t usecompactstring = eobool_false;
     rot = eoas_string2posrot(t, usecompactstring);
 
-    yDebug() << t << " yyyyyyyyyyyyyyyyyyy " << rot;
-
-
     if(eoas_pos_ROT_unknown == rot)
     {   // attempting to retrieve the compact form
         usecompactstring = eobool_true;
         rot = eoas_string2posrot(t, usecompactstring);
-        yDebug() << t << " xxxxxxxxxxxxxxxxxxx " << rot;
     }
 
     if(eoas_pos_ROT_unknown == rot)

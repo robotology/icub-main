@@ -22,7 +22,7 @@ set(QtICubSkinGuiPlugin_SRCS Fingertip2Left.cpp
                              qticubskinguiplugin_plugin.cpp
                              Quad16.cpp
                              SkinMeshThreadCan.cpp
-                             SkinMeshThreadPort.cpp
+                             SkinMeshClient.cpp
                              TouchSensor.cpp
                              Triangle_10pad.cpp
                              Triangle.cpp
@@ -43,11 +43,11 @@ set(QtICubSkinGuiPlugin_HDRS qticubskinguiplugin.h
                              include/PalmRight.h
                              include/Quad16.h
                              include/SkinMeshThreadCan.h
-                             include/SkinMeshThreadPort.h
+                             include/SkinMeshClient.h
                              include/TouchSensor.h
                              include/Triangle_10pad.h
                              include/Triangle.h
-							 include/CER_SH_PDL.h)
+			     include/CER_SH_PDL.h)
 
 source_group("Source Files" FILES ${QtICubSkinGuiPlugin_SRCS})
 source_group("Header Files" FILES ${QtICubSkinGuiPlugin_HDRS})

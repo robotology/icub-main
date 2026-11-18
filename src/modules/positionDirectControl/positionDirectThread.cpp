@@ -155,8 +155,8 @@ bool positionDirectControlThread::init(PolyDriver *d, std::string moduleName, st
         return false;
     }
 
-    int tmpj=0;
-    ipos->getAxes(&tmpj);
+    size_t tmpj=0;
+    ipos->getAxes(tmpj);
     part_joints=tmpj;
     control_joints= jointsList->size();
     if (control_joints>part_joints)
@@ -192,7 +192,7 @@ bool positionDirectControlThread::init(PolyDriver *d, std::string moduleName, st
     speeds=10.0;
     for (unsigned int i=0; i<control_joints; i++)
     {
-        ipos->setRefSpeed(control_joints_list[i],speeds[i]);
+        ipos->setTrajSpeed(control_joints_list[i],speeds[i]);
     }
 
     encoders.resize(control_joints);
@@ -210,7 +210,7 @@ bool positionDirectControlThread::init(PolyDriver *d, std::string moduleName, st
     {
         double min=0;
         double max=0;
-        ilim->getLimits(control_joints_list[i],&min,&max);
+        ilim->getPosLimits(control_joints_list[i],&min,&max);
         min_limits[i]=min;
         max_limits[i]=max;
     }

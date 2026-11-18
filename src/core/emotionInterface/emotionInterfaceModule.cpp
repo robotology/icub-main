@@ -262,12 +262,12 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
         if (iCM)
             ok &= iCM->setControlMode(_joint_eylids, VOCAB_CM_POSITION);
         if (iCtrlLim) {
-            ok &= iCtrlLim->getLimits(_joint_eylids, &_min, &_max);
+            ok &= iCtrlLim->getPosLimits(_joint_eylids, &_min, &_max);
             _max = _max - 25.0; // safe zone for avoiding hw fault
         }
         if (_iPos) {
-            ok &= _iPos->setRefSpeed(_joint_eylids, 50.0); // max velocity that doesn't give problems
-            ok &= _iPos->setRefAcceleration(_joint_eylids,std::numeric_limits<double>::max());
+            ok &= _iPos->setTrajSpeed(_joint_eylids, 50.0); // max velocity that doesn't give problems
+            ok &= _iPos->setTrajAcceleration(_joint_eylids,std::numeric_limits<double>::max());
         }
         if (!ok)
         {

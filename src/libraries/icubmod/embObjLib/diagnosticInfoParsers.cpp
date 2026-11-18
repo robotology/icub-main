@@ -663,7 +663,7 @@ std::string MotionControlParser::motorStatusBitsToString(eOmc_motorFaultState_t 
         "CAN_IsWarnTX",
         "CAN_IsWarnRX",
         "OverHeatingFailure",
-        "",
+        "I2C_CommFailure",
         //B2 L
         "ADCCalFailure",
         "I2TFailure",
@@ -787,17 +787,18 @@ void MotionControlParser::parseInfo()
             motor_status.bitmask = m_dnginfo.param64 & 0xffffffff;
             m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
             std::string motorStatusString = motorStatusBitsToString(motor_status);
-            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) (Errors:%s)", 
-                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, motorStatusString.c_str()
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) (Err_bitmask=%x)(Errors:%s)", 
+                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, motor_status.bitmask, motorStatusString.c_str()
                                         );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
         
-        case eoerror_value_MC_motor_wrong_state: //TBD: check states
+        case eoerror_value_MC_motor_wrong_state: //TBD: create a function to convert state to string
         {
+            //#warning TODO: create a function to convert state to string
             uint16_t joint_num = m_dnginfo.param16;
-            uint16_t req_state = (m_dnginfo.param64 & 0xf0)>>4;
-            uint16_t cur_state = m_dnginfo.param64 & 0x0f;
+            uint16_t req_state = (m_dnginfo.param64 & 0xff00)>>8;
+            uint16_t cur_state = m_dnginfo.param64 & 0xff;
 
             m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
 
@@ -830,9 +831,10 @@ void MotionControlParser::parseInfo()
             
             switch(timeout_type)
             {
-                case eoerror_value_MC_ref_timeout_torque:  timeout_type_str = "TORQUE";  break;
-                case eoerror_value_MC_ref_timeout_current: timeout_type_str = "CURRENT"; break;
-                case eoerror_value_MC_ref_timeout_pwm:     timeout_type_str = "PWM";     break;
+                case eoerror_value_MC_ref_timeout_torque:     timeout_type_str = "TORQUE";    break;
+                case eoerror_value_MC_ref_timeout_current:    timeout_type_str = "CURRENT";   break;
+                case eoerror_value_MC_ref_timeout_pwm:        timeout_type_str = "PWM";       break;
+                case eoerror_value_MC_ref_timeout_velocity:   timeout_type_str = "VELOCITY";  break;
                 default: timeout_type_str = "UNKNOWN"; break;
             }
 

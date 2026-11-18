@@ -58,7 +58,7 @@ public:
      * the position control interfaces of the standard control board devices.
      * @return true if calibration was successful, false otherwise.
      */
-    bool calibrate(DeviceDriver *device) override;
+    ReturnValue calibrate(DeviceDriver *device) override;
 
     /**
      * Open the device driver.
@@ -74,27 +74,27 @@ public:
      */
     virtual bool close ()  override;
 
-    virtual bool park(DeviceDriver *dd, bool wait=true)  override;
+    virtual ReturnValue park(DeviceDriver *dd, bool wait=true)  override;
 
-    virtual bool quitPark()  override;
+    virtual ReturnValue quitPark()  override;
 
-    virtual bool quitCalibrate()  override;
+    virtual ReturnValue quitCalibrate()  override;
 
     // IRemoteCalibrator
 
     virtual  yarp::dev::IRemoteCalibrator *getCalibratorDevice()  override;
 
-    virtual bool calibrateSingleJoint(int j)  override;
+    virtual ReturnValue calibrateSingleJoint(int j)  override;
 
-    virtual bool calibrateWholePart()  override;
+    virtual ReturnValue calibrateWholePart()  override;
 
-    virtual bool homingSingleJoint(int j)  override;
+    virtual ReturnValue homingSingleJoint(int j)  override;
 
-    virtual bool homingWholePart()  override;
+    virtual ReturnValue homingWholePart()  override;
 
-    virtual bool parkSingleJoint(int j, bool _wait=true)  override;
+    virtual ReturnValue parkSingleJoint(int j, bool _wait=true)  override;
 
-    virtual bool parkWholePart()  override;
+    virtual ReturnValue parkWholePart()  override;
 
 private:
 

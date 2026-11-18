@@ -2,24 +2,29 @@
 
 /*
  * Copyright (C) 2009 RobotCub Consortium
- * Author: Marco Maggiali, Alessandro Scalzo
+ * Author: Marco Maggiali, Alessandro Scalzo, Jacopo Losi
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */
 
-#ifndef __SKIN_MESH_THREAD_PORT_H__
-#define __SKIN_MESH_THREAD_PORT_H__
+#ifndef __SKIN_MESH_CLIENT_H__
+#define __SKIN_MESH_CLIENT_H__
 
 #include <mutex>
 #include <string>
 #include <vector>
 
-#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Log.h>
+#include <yarp/os/Property.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/PolyDriverList.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/sig/Vector.h>
+
+#include <yarp/os/RFModule.h>
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
+#include <yarp/dev/IMultipleWrapper.h>
 
 #include "include/Quad16.h"
 #include "include/PalmRight.h"
@@ -40,7 +45,7 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class SkinMeshThreadPort : public PeriodicThread 
+class SkinMeshClient : public yarp::os::RFModule
 {
 protected:
     static const int MAX_SENSOR_NUM = 128;
@@ -53,15 +58,34 @@ protected:
 
     int sensorsNum;
     bool mbSimpleDraw;
-    
+    bool m_configured{false};
+    double m_period{0.05};
+    bool m_externalConnection{true};
+    mutable double m_lastNoSkinPatchWarningTime{0.0};
+
     std::vector<unsigned char> defaultColor;
 
     double skinThreshold;
 
-public:
-    SkinMeshThreadPort(Searchable& config,int period);
+private:
 
-    ~SkinMeshThreadPort()
+    yarp::os::Property m_config;
+    yarp::dev::PolyDriver _multipleAnalogSensorsClientDevice;
+    yarp::dev::PolyDriver _multipleAnalogSensorsRemapperDevice;
+    struct
+    {
+        yarp::dev::ISkinPatches* iskinPatchesSensors{nullptr};
+        yarp::dev::IMultipleWrapper* imultwrap{nullptr};
+    } remappedMASInterfaces;
+
+    bool configureFromSearchable(yarp::os::Searchable& config);
+    bool configureSkinClient(yarp::os::Searchable& config, const std::string& localPrefix);
+    bool readSkinPatches(yarp::sig::Vector& skinValue) const;
+
+public:
+    SkinMeshClient(Searchable& config,int period);
+
+    ~SkinMeshClient()
     {
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
@@ -69,9 +93,13 @@ public:
         }
     }
 
-    virtual bool threadInit();
-    virtual void threadRelease();
-    virtual void run();
+    bool start();
+    void stop();
+
+    virtual bool configure(yarp::os::ResourceFinder &rf) override;
+    virtual bool close() override;
+    virtual double getPeriod() override;
+    virtual bool updateModule() override;
 
     void resize(int width,int height)
     {

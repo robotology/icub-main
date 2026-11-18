@@ -188,7 +188,7 @@ class GetMotPwm : public GetData
 public:
   void setInterface (IAmplifierControl *);
   virtual bool getData(double *);
-  int n_joint_part;
+  size_t n_joint_part;
 
   IAmplifierControl *iamp;
 };

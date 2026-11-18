@@ -871,7 +871,7 @@ public:
                                 if(!ddBoard.view(ienc))
                                     return false;
                             }
-                            ienc->getAxes(&myGetMotPwm.n_joint_part);
+                            ienc->getAxes(myGetMotPwm.n_joint_part);
                             if (ddBoard.view(istmp))
                             {
                                 yInfo("getMotorsPwm::The time stamp initalization interfaces was successfull! \n");

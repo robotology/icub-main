@@ -222,7 +222,7 @@ public:
                         nodesPrev[cnt++]=Point2f((float)x,(float)y);
 
                 // convert to gray-scale
-                cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoPrev),CV_BGR2GRAY);
+                cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoPrev),COLOR_BGR2GRAY);
 
                 if (verbosity)
                 {
@@ -236,7 +236,7 @@ public:
             }
 
             // convert the input image to gray-scale
-            cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoIn),CV_BGR2GRAY);
+            cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoIn),COLOR_BGR2GRAY);
 
             // copy input image into output image
             ImageOf<PixelBgr> imgBgrOut=*pImgBgrIn;

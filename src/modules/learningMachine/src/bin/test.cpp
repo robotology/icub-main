@@ -29,12 +29,13 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/RFModule.h>
-#include <yarp/os/PortablePair.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Vocab.h>
+
+#include "iCub/learningMachine/VectorPair.h"
 
 #define TWOPI  6.283185307179586
 
@@ -45,11 +46,8 @@ namespace iCub {
 namespace learningmachine {
 namespace test {
 
-// the Prediction class is compatible with a PortablePair of Vector objects.
-// in this class, we demonstrate that we in fact only need standard Yarp
-// classes to make use of the learningMachine library: no learningMachine headers
-// or library linking required!
-typedef PortablePair<Vector,Vector> Prediction;
+// Prediction and training samples use the same two-vector wire format.
+typedef VectorPair Prediction;
 
 // it's 2011 and I still have to implement a double to string conversion? come on!
 std::string doubletostring(double d) {
@@ -243,7 +241,7 @@ public:
 
 class MachineLearnerTestModule : public RFModule {
 private:
-    BufferedPort<PortablePair<Vector,Vector> > train_out;
+    BufferedPort<VectorPair> train_out;
     Port predict_inout;
 
     std::string portPrefix;
@@ -387,7 +385,7 @@ public:
     }
 
     void sendTrainSample(Vector input, Vector output) {
-        PortablePair<Vector,Vector>& sample = this->train_out.prepare();
+        VectorPair& sample = this->train_out.prepare();
         sample.head = input;
         sample.body = output;
         this->train_out.writeStrict();
@@ -642,4 +640,3 @@ int main(int argc, char *argv[]) {
     }
     return ret;
 }
-

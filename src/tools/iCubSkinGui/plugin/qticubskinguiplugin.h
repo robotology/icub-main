@@ -6,7 +6,7 @@
 #include <QTimer>
 #include <yarp/os/all.h>
 #include "include/SkinMeshThreadCan.h"
-#include "include/SkinMeshThreadPort.h"
+#include "include/SkinMeshClient.h"
 
 
 class QtICubSkinGuiPlugin : public QQuickPaintedItem
@@ -49,7 +49,7 @@ private:
     double *gpActivationMap;
     uchar *gpImageBuff;
     SkinMeshThreadCan *gpSkinMeshThreadCan;
-    SkinMeshThreadPort *gpSkinMeshThreadPort;
+    SkinMeshClient *gpSkinMeshClient;
 
     QTimer timer;
     QString window_title;

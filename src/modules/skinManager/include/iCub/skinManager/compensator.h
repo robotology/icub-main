@@ -34,7 +34,7 @@
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Log.h>
-#include <yarp/dev/IAnalogSensor.h>
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
 #include "iCub/skinDynLib/skinContact.h"
@@ -97,7 +97,7 @@ private:
     vector< vector<int> > skin_empty;           // distribution of the values read during the calibration
     
     // DEVICE
-    IAnalogSensor* tactileSensor;               // interface for executing the tactile sensor calibration
+    ISkinPatches* tactileSensor;               // interface for executing the tactile sensor calibration
     PolyDriver* tactileSensorDevice;
     std::string tactileSensorDevice_inputPortName;
 

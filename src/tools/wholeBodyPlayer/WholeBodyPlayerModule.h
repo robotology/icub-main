@@ -85,17 +85,17 @@ public:
     {
         if (m_posDir && m_enc && m_CM && m_controlLimits) {
             // Get num of axes
-            m_posDir->getAxes(&m_numAxes);
+            m_posDir->getAxes(m_numAxes);
             // Set in position direct
-            std::vector<int> cms (m_numAxes, VOCAB_CM_POSITION_DIRECT);
-            m_CM->setControlModes(cms.data());
+            std::vector<yarp::dev::SelectableControlModeEnum> cms (m_numAxes, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION_DIRECT);
+            m_CM->setControlModes(cms);
             // Allocate vectors
             m_currState.resize(m_numAxes);
             m_nextState.resize(m_numAxes);
             max.resize(m_numAxes);
             min.resize(m_numAxes);
             for (size_t i = 0; i<m_numAxes; i++) {
-               m_controlLimits->getLimits(i,&min[i],&max[i]);
+               m_controlLimits->getPosLimits(i,&min[i],&max[i]);
             }
         }
         yarp::os::BufferedPort<yarp::os::Bottle>::useCallback();
@@ -138,8 +138,8 @@ public:
 
     bool positionMoveFallback(){
         bool ok = true;
-        std::vector<int> cms (m_numAxes, VOCAB_CM_POSITION);
-        ok &= m_CM->setControlModes(cms.data());
+        std::vector<yarp::dev::SelectableControlModeEnum> cms (m_numAxes, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
+        ok &= m_CM->setControlModes(cms);
 
         if (!ok) {
             m_state = state::fatal_error;
@@ -155,7 +155,7 @@ public:
             return ok;
         }
         bool done{false};
-        ok &= m_posControl->checkMotionDone(&done);
+        ok &= m_posControl->checkMotionDone(done);
 
         if (!ok) {
             m_state = state::fatal_error;
@@ -163,7 +163,7 @@ public:
         }
 
         while (!done) {
-            ok &= m_posControl->checkMotionDone(&done);
+            ok &= m_posControl->checkMotionDone(done);
             if (!ok) {
                 m_state = state::fatal_error;
                 return ok;
@@ -171,8 +171,8 @@ public:
             yarp::os::Time::delay(0.01);
         }
 
-        std::vector<int> cmDir (m_numAxes, VOCAB_CM_POSITION_DIRECT);
-        ok &= m_CM->setControlModes(cmDir.data());
+        std::vector<yarp::dev::SelectableControlModeEnum> cmDir (m_numAxes, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION_DIRECT);
+        ok &= m_CM->setControlModes(cmDir);
         if (!ok) {
             m_state = state::fatal_error;
             return ok;
@@ -194,7 +194,7 @@ private:
 
 
     std::vector<double> m_currState, m_nextState;
-    int m_numAxes{0};
+    size_t m_numAxes{0};
     bool m_simulator;
     bool m_isArm{false};
 };

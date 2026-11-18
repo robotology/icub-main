@@ -19,9 +19,8 @@
 #ifndef LM_TRAINMODULE__
 #define LM_TRAINMODULE__
 
-#include <yarp/os/PortablePair.h>
-
 #include "iCub/learningMachine/PredictModule.h"
+#include "iCub/learningMachine/VectorPair.h"
 
 
 namespace iCub {
@@ -37,7 +36,7 @@ namespace learningmachine {
  * \author Arjan Gijsberts
  *
  */
-class TrainProcessor : public IMachineProcessor, public yarp::os::TypedReaderCallback< yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector> > {
+class TrainProcessor : public IMachineProcessor, public yarp::os::TypedReaderCallback<VectorPair> {
 private:
     /**
      * Boolean switch to disable and enable the sample stream to the machine.
@@ -64,7 +63,7 @@ public:
     /*
      * Inherited from TypedReaderCallback.
      */
-    virtual void onRead(yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector>& sample);
+    virtual void onRead(VectorPair& sample);
 
 };
 
@@ -92,7 +91,7 @@ private:
     /**
      * Buffered port for the incoming training samples.
      */
-    yarp::os::BufferedPort< yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector> > train_in;
+    yarp::os::BufferedPort<VectorPair> train_in;
 
     /**
      * Port for the outgoing models to the predict module.
