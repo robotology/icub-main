@@ -306,8 +306,8 @@ public:
 
         if (bTarget!=NULL)
             if (Bottle *bCartesian=bTarget->find("cartesian").asList())
-                if ((size_t)bCartesian->size()==track_cartesian_target.length())
-                    for (size_t i=0; i<track_cartesian_target.length(); i++)
+                if ((size_t)bCartesian->size()==track_cartesian_target.size())
+                    for (size_t i=0; i<track_cartesian_target.size(); i++)
                         track_cartesian_target[i]=bCartesian->get(i).asFloat64();
     }
 

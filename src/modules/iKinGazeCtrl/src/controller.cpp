@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <sstream>
 
+#include <iCub/ctrl/vectorUtils.h>
 #include <iCub/solver.h>
 #include <iCub/controller.h>
 
@@ -122,11 +123,11 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     setTeyes(eyesTime);
     setTneck(neckTime);
 
-    mjCtrlNeck=new minJerkVelCtrlForIdealPlant(Ts,(int)fbNeck.length());
-    mjCtrlEyes=new minJerkVelCtrlForIdealPlant(Ts,(int)fbEyes.length());
+    mjCtrlNeck=new minJerkVelCtrlForIdealPlant(Ts,(int)fbNeck.size());
+    mjCtrlEyes=new minJerkVelCtrlForIdealPlant(Ts,(int)fbEyes.size());
     IntState=new Integrator(Ts,fbHead,lim);
     IntPlan=new Integrator(Ts,fbNeck,lim.submatrix(0,2,0,1));
-    IntStabilizer=new Integrator(Ts,zeros((int)vNeck.length()));
+    IntStabilizer=new Integrator(Ts,zeros((int)vNeck.size()));
 
     neckJoints.resize(3);
     eyesJoints.resize(3);
@@ -468,7 +469,7 @@ Vector Controller::computeEyesVelFromdxFP(const Vector &dfp)
         CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,eyesJ))
         return pinv(eyesJ)*dfp.subVector(0,2);
     else
-        return zeros((int)vEyes.length());
+        return zeros((int)vEyes.size());
 }
 
 
@@ -493,7 +494,7 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
     if (commData->debugInfoEnabled && (port_debug.getOutputCount()>0))
     {
         Bottle info;
-        for (size_t i=0; i<ang_.length(); i++)
+        for (size_t i=0; i<ang_.size(); i++)
         {
             ostringstream ss;
             ss<<"pos_"<<eyesJoints[i];
@@ -538,7 +539,7 @@ bool Controller::look(const Vector &x)
 void Controller::resetCtrlEyes()
 {
     lock_guard<mutex> lg(mutexCtrl);
-    mjCtrlEyes->reset(zeros((int)fbEyes.length()));
+    mjCtrlEyes->reset(zeros((int)fbEyes.size()));
     unplugCtrlEyes=false;
 }
 
@@ -609,7 +610,7 @@ bool Controller::setGazeStabilization(const bool f)
                 if (!commData->ctrlActive)
                 {
                     IntPlan->reset(fbNeck);
-                    IntStabilizer->reset(zeros((int)vNeck.length()));
+                    IntStabilizer->reset(zeros((int)vNeck.size()));
                 }
                 notifyEvent("stabilization-on");
             }
@@ -716,7 +717,7 @@ void Controller::run()
     fbEyes=fbHead.subVector(3,5);
 
     double errNeck=norm(qd.subVector(0,2)-fbNeck);
-    double errEyes=norm(qd.subVector(3,(unsigned int)qd.length()-1)-fbEyes);
+    double errEyes=norm(qd.subVector(3,(unsigned int)qd.size()-1)-fbEyes);
     bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLESLOT*getPeriod()) ? false :
                    (!commData->saccadeUnderway &&
                    (errNeck<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
@@ -780,9 +781,9 @@ void Controller::run()
             }
             else
             {
-                mjCtrlNeck->reset(zeros((int)fbNeck.length()));
-                mjCtrlEyes->reset(zeros((int)fbEyes.length()));
-                IntStabilizer->reset(zeros((int)vNeck.length()));
+                mjCtrlNeck->reset(zeros((int)fbNeck.size()));
+                mjCtrlEyes->reset(zeros((int)fbEyes.size()));
+                IntStabilizer->reset(zeros((int)vNeck.size()));
                 IntPlan->reset(fbNeck);
             }
 
@@ -843,7 +844,7 @@ void Controller::run()
             bool statusGyro = resGyro.second;
 
             if (statusGyro) {
-                Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros((int)fbNeck.length()),gyro,x);
+                Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros((int)fbNeck.size()),gyro,x);
                 Vector imuNeck=computeNeckVelFromdxFP(x,dx);
                 if (reliableGyro)
                 {
@@ -856,7 +857,7 @@ void Controller::run()
                 // hysteresis
                 else if ((norm(imuNeck)>1.5*commData->gyro_noise_threshold) || (pathPerc<0.9))
                 {
-                    IntStabilizer->reset(zeros((int)vNeck.length()));
+                    IntStabilizer->reset(zeros((int)vNeck.size()));
                     reliableGyro=true;
                 }
             }
@@ -870,7 +871,7 @@ void Controller::run()
         Vector gyro{resGyro.first};
         bool statusGyro  = resGyro.second;
         if (statusGyro) {
-            Vector dx = computedxFP(imu->getH(cat(fbTorso, fbNeck)), zeros((int) fbNeck.length()), gyro, x);
+            Vector dx = computedxFP(imu->getH(cat(fbTorso, fbNeck)), zeros((int) fbNeck.size()), gyro, x);
             Vector imuNeck = computeNeckVelFromdxFP(x, dx);
 
             vNeck = commData->stabilizationGain * IntStabilizer->integrate(-1.0 * imuNeck);
@@ -884,12 +885,12 @@ void Controller::run()
         vEyes=0.0;
     }
 
-    v.setSubvector(0,vNeck);
-    v.setSubvector(3,vEyes);
+    iCub::ctrl::setSubVector(v, 0, vNeck);
+    iCub::ctrl::setSubVector(v, 3, vEyes);
 
     // apply bang-bang just in case to compensate
     // for unachievable low velocities
-    for (size_t i=0; i<v.length(); i++)
+    for (size_t i=0; i<v.size(); i++)
         if ((v[i]!=0.0) && (v[i]>-min_abs_vel) && (v[i]<min_abs_vel))
             v[i]=yarp::math::sign(qd[i]-fbHead[i])*min_abs_vel;
 
@@ -922,7 +923,7 @@ void Controller::run()
 
             if (commData->neckPosCtrlOn)
             {
-                for (size_t i=0; i<posdeg.length(); i++)
+                for (size_t i=0; i<posdeg.size(); i++)
                 {
                     ostringstream ss;
                     ss<<"pos_"<<i;
@@ -933,7 +934,7 @@ void Controller::run()
                 j=eyesJoints[0];
             }
 
-            for (size_t i=j; i<vdeg.length(); i++)
+            for (size_t i=j; i<vdeg.size(); i++)
             {
                 ostringstream ss;
                 ss<<"vel_"<<i;
@@ -959,7 +960,7 @@ void Controller::run()
     int j;
     for (j=0; j<nJointsTorso; j++)
         q[j]=CTRL_RAD2DEG*fbTorso[j];
-    for (; (size_t)j<q.length(); j++)
+    for (; (size_t)j<q.size(); j++)
         q[j]=qdeg[j-nJointsTorso];
 
     txInfo_x.update(x_stamp);

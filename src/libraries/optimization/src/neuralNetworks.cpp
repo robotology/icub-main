@@ -82,17 +82,17 @@ protected:
     {
         Ipopt::Index k=0;
         for (size_t i=0; i<IW.size(); i++)
-            for (size_t j=0; j<IW.front().length(); j++, k++)
+            for (size_t j=0; j<IW.front().size(); j++, k++)
                 IW[i][j]=x[k];
 
         for (size_t i=0; i<LW.size(); i++)
-            for (size_t j=0; j<LW.front().length(); j++, k++)
+            for (size_t j=0; j<LW.front().size(); j++, k++)
                 LW[i][j]=x[k];
 
-        for (size_t i=0; i<b1.length(); i++, k++)
+        for (size_t i=0; i<b1.size(); i++, k++)
             b1[i]=x[k];
 
-        for (size_t i=0; i<b2.length(); i++, k++)
+        for (size_t i=0; i<b2.size(); i++, k++)
             b2[i]=x[k];
     }
 
@@ -101,17 +101,17 @@ protected:
     {
         Ipopt::Index k=0;
         for (size_t i=0; i<IW.size(); i++)
-            for (size_t j=0; j<IW.front().length(); j++, k++)
+            for (size_t j=0; j<IW.front().size(); j++, k++)
                 x[k]=std::min(x_u[k],std::max(IW[i][j],x_l[k]));
 
         for (size_t i=0; i<LW.size(); i++)
-            for (size_t j=0; j<LW.front().length(); j++, k++)
+            for (size_t j=0; j<LW.front().size(); j++, k++)
                 x[k]=std::min(x_u[k],std::max(LW[i][j],x_l[k]));
 
-        for (size_t i=0; i<b1.length(); i++, k++)
+        for (size_t i=0; i<b1.size(); i++, k++)
             x[k]=std::min(x_u[k],std::max(b1[i],x_l[k]));
 
-        for (size_t i=0; i<b2.length(); i++, k++)
+        for (size_t i=0; i<b2.size(); i++, k++)
             x[k]=std::min(x_u[k],std::max(b2[i],x_l[k]));
     }
 
@@ -126,7 +126,7 @@ public:
                      b1(_net.get_b1()), b2(_net.get_b2())
     {
         pred.clear();
-        error=0.0;        
+        error=0.0;
     }
 
     /****************************************************************/
@@ -139,7 +139,7 @@ public:
     bool get_nlp_info(Ipopt::Index &n, Ipopt::Index &m, Ipopt::Index &nnz_jac_g,
                       Ipopt::Index &nnz_h_lag, IndexStyleEnum &index_style)
     {
-        n=IW.size()*IW.front().length()+LW.size()*LW.front().length()+b1.length()+b2.length();
+        n=IW.size()*IW.front().size()+LW.size()*LW.front().size()+b1.size()+b2.size();
         m=nnz_jac_g=nnz_h_lag=0;
         index_style=TNLP::C_STYLE;
 
@@ -158,16 +158,16 @@ public:
         Ipopt::Index k=0;
         for (size_t i=0; i<IW.size(); i++)
         {
-            for (size_t j=0; j<IW.front().length(); j++, k++)
+            for (size_t j=0; j<IW.front().size(); j++, k++)
             {
                 x_l[k]=min_IW;
                 x_u[k]=max_IW;
             }
         }
-            
+
         for (size_t i=0; i<LW.size(); i++)
         {
-            for (size_t j=0; j<LW.front().length(); j++, k++)
+            for (size_t j=0; j<LW.front().size(); j++, k++)
             {
                 x_l[k]=min_LW;
                 x_u[k]=max_LW;
@@ -277,7 +277,7 @@ public:
         pred.clear();
         for (size_t i=0; i<in.size(); i++)
         {
-            Vector pred=net.predict(in[i]);            
+            Vector pred=net.predict(in[i]);
             error+=norm2(out[i]-pred);
             this->pred.push_back(pred);
         }
@@ -323,12 +323,12 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
         return false;
 
     IW.clear();
-    IW.assign(numHiddenNodes,Vector(in.front().length(),0.0));
+    IW.assign(numHiddenNodes,Vector(in.front().size(),0.0));
     b1.resize(numHiddenNodes,0.0);
 
     LW.clear();
-    LW.assign(out.front().length(),Vector(numHiddenNodes,0.0));
-    b2.resize(out.front().length(),0.0);
+    LW.assign(out.front().size(),Vector(numHiddenNodes,0.0));
+    b2.resize(out.front().size(),0.0);
 
     inMinMaxX.clear();
     inMinMaxY.clear();
@@ -338,7 +338,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
 
     // seek for min-max of input and scale it in [-1,1]
     const Vector &in_front=in.front();
-    for (size_t i=0; i<in_front.length(); i++)
+    for (size_t i=0; i<in_front.size(); i++)
     {
         minmax range;
         range.min=range.max=in_front[i];
@@ -348,7 +348,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
     }
     for (size_t i=1; i<in.size(); i++)
     {
-        for (size_t j=0; j<in_front.length(); j++)
+        for (size_t j=0; j<in_front.size(); j++)
         {
             inMinMaxX[j].min=std::min(inMinMaxX[j].min,in[i][j]);
             inMinMaxX[j].max=std::max(inMinMaxX[j].max,in[i][j]);
@@ -357,14 +357,14 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
 
     // enlarge of 10%
     for (size_t i=0; i<inMinMaxX.size(); i++)
-    {   
+    {
         inMinMaxX[i].min-=0.1*fabs(inMinMaxX[i].min);
         inMinMaxX[i].max+=0.1*fabs(inMinMaxX[i].max);
     }
 
     // seek for min-max of output and scale it in [-1,1]
     const Vector &out_front=out.front();
-    for (size_t i=0; i<out_front.length(); i++)
+    for (size_t i=0; i<out_front.size(); i++)
     {
         minmax range;
         range.min=range.max=out_front[i];
@@ -374,7 +374,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
     }
     for (size_t i=1; i<out.size(); i++)
     {
-        for (size_t j=0; j<out_front.length(); j++)
+        for (size_t j=0; j<out_front.size(); j++)
         {
             outMinMaxX[j].min=std::min(outMinMaxX[j].min,out[i][j]);
             outMinMaxX[j].max=std::max(outMinMaxX[j].max,out[i][j]);
@@ -383,7 +383,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
 
     // enlarge of 10%
     for (size_t i=0; i<outMinMaxX.size(); i++)
-    {   
+    {
         outMinMaxX[i].min-=0.1*fabs(outMinMaxX[i].min);
         outMinMaxX[i].max+=0.1*fabs(outMinMaxX[i].max);
     }
@@ -410,7 +410,7 @@ bool ff2LayNNTrain::retrain(const deque<Vector> &in, const deque<Vector> &out,
     Ipopt::ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));
 
     error=nlp->get_error();
-    return (status==Ipopt::Solve_Succeeded);    
+    return (status==Ipopt::Solve_Succeeded);
 }
 
 
