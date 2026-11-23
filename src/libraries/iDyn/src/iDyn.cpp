@@ -69,7 +69,7 @@ void iCub::iDyn::workInProgress(const unsigned int verbose, const std::string &m
 bool iCub::iDyn::asWrench(Vector &w, const Vector &f, const Vector &m)
 {
     w.resize(6); w.zero();
-    if((f.length()==3)||(m.length()==3))
+    if((f.size()==3)||(m.size()==3))
     {
         w[0]=f[0]; w[1]=f[1]; w[2]=f[2];
         w[3]=m[0]; w[4]=m[1]; w[5]=m[2];
@@ -77,7 +77,7 @@ bool iCub::iDyn::asWrench(Vector &w, const Vector &f, const Vector &m)
     }
     else
     {
-        yError("iDyn: error in calling asWrench(), wrong sized vectors: (%d,%d) instead of (3,3). return wrench set automatically as zero.\n",(int)f.length(),(int)m.length());
+        yError("iDyn: error in calling asWrench(), wrong sized vectors: (%d,%d) instead of (3,3). return wrench set automatically as zero.\n",(int)f.size(),(int)m.size());
         return false;
     }
 }
@@ -85,14 +85,14 @@ bool iCub::iDyn::asWrench(Vector &w, const Vector &f, const Vector &m)
 Vector iCub::iDyn::asWrench(const Vector &f, const Vector &m)
 {
     Vector w(6); w.zero();
-    if((f.length()==3)||(m.length()==3))
+    if((f.size()==3)||(m.size()==3))
     {
         w[0]=f[0]; w[1]=f[1]; w[2]=f[2];
         w[3]=m[0]; w[4]=m[1]; w[5]=m[2];
     }
     else
     {
-        yError("iDyn: error in calling asWrench(), wrong sized vectors: (%d,%d) instead of (3,3). return wrench set automatically as zero.\n",(int)f.length(),(int)m.length());
+        yError("iDyn: error in calling asWrench(), wrong sized vectors: (%d,%d) instead of (3,3). return wrench set automatically as zero.\n",(int)f.size(),(int)m.size());
     }
     return w;
 }
@@ -102,7 +102,7 @@ bool iCub::iDyn::asForceMoment(const Vector &w, Vector &f, Vector &m)
     f.resize(3); f.zero();
     m.resize(3); m.zero();
 
-    if(w.length()==6)
+    if(w.size()==6)
     {
         f[0]=w[0]; f[1]=w[1]; f[2]=w[2];
         m[0]=w[3]; m[1]=w[4]; m[2]=w[5];  
@@ -110,7 +110,7 @@ bool iCub::iDyn::asForceMoment(const Vector &w, Vector &f, Vector &m)
     }
     else
     {
-        yError("iDyn: error in calling asForceMoment(), wrong sized vector: (%d) instead of (6). return force/moment set automatically as zero.\n",(int)w.length());
+        yError("iDyn: error in calling asForceMoment(), wrong sized vector: (%d) instead of (6). return force/moment set automatically as zero.\n",(int)w.size());
         return false;
     }
 }
@@ -307,7 +307,7 @@ bool iDynLink::setCOM(const yarp::sig::Matrix &_HC)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynLink::setCOM(const yarp::sig::Vector &_rC)
 {
-    if(_rC.length()==3)
+    if(_rC.size()==3)
     {
         HC = eye(4,4);
         HC(0,3) = _rC(0);
@@ -321,7 +321,7 @@ bool iDynLink::setCOM(const yarp::sig::Vector &_rC)
     else    
     {
         if(verbose)
-            yError("iDynLink error, cannot set distance from COM due to wrong sized vector: %d instead of 3 \n",(int)_rC.length());
+            yError("iDynLink error, cannot set distance from COM due to wrong sized vector: %d instead of 3 \n",(int)_rC.size());
         return false;
     }
 }
@@ -339,7 +339,7 @@ void iDynLink::setCOM(const double _rCx, const double _rCy, const double _rCz)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynLink::setForce(const yarp::sig::Vector &_F)
 {
-    if( _F.length()==3) 
+    if( _F.size()==3)
     {
         F = _F;
         return true;
@@ -347,14 +347,14 @@ bool iDynLink::setForce(const yarp::sig::Vector &_F)
     else
     {
         if(verbose)
-            yError("iDynLink error: cannot set forces due to wrong size: %d instead of 3.\n",(int)_F.length());
+            yError("iDynLink error: cannot set forces due to wrong size: %d instead of 3.\n",(int)_F.size());
         return false;
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynLink::setMoment(const yarp::sig::Vector &_Mu)
 {
-    if(_Mu.length()==3)
+    if(_Mu.size()==3)
     {
         Mu = _Mu;
         return true;
@@ -362,7 +362,7 @@ bool iDynLink::setMoment(const yarp::sig::Vector &_Mu)
     else
     {
         if(verbose)
-            yError("iDynLink error, cannot set moments due to wrong size: %d instead of 3. \n",(int)_Mu.length());
+            yError("iDynLink error, cannot set moments due to wrong size: %d instead of 3. \n",(int)_Mu.size());
         return false;
     }
 }
@@ -536,7 +536,7 @@ Vector iDynChain::setAng(const Vector &q)
         return Vector(0);
     }
 
-    int sz=(q.length()>(int)DOF)?DOF:q.length();
+    int sz=(q.size()>(int)DOF)?DOF:q.size();
     for (int i=0; i<sz; i++)    // cast to iDynLink so calling setAng invalidates the H matrix
         curr_q[i] = dynamic_cast<iDynLink*>(quickList[hash_dof[i]])->setAng(q[i]);
 
@@ -550,7 +550,7 @@ Vector iDynChain::setDAng(const Vector &dq)
 
     curr_dq.resize(DOF);
 
-    if(dq.length()>=(int)DOF)
+    if(dq.size()>=(int)DOF)
     {
         for(unsigned int i=0; i<DOF; i++)
             curr_dq[i]=quickList[hash_dof[i]]->setDAng(dq[i]);
@@ -569,7 +569,7 @@ Vector iDynChain::setD2Ang(const Vector &ddq)
 
     curr_ddq.resize(DOF);
 
-    if(ddq.length()>=(int)DOF)      
+    if(ddq.size()>=(int)DOF)
     {
         for(unsigned int i=0; i<DOF; i++)
             curr_ddq[i]=quickList[hash_dof[i]]->setD2Ang(ddq[i]);
@@ -806,7 +806,7 @@ Vector iDynChain::getMasses() const
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::setMasses(Vector _m) 
 {
-    if(_m.length()==N)
+    if(_m.size()==N)
     {
         for(unsigned int i=0; i<N; i++)
             allList[i]->setMass(_m[i]);
@@ -814,7 +814,7 @@ bool iDynChain::setMasses(Vector _m)
     }
     else
     {
-        if(verbose) yError("iDynChain error: setMasses() failed due to wrong vector size: %d instead of %d",(int)_m.length(),N);
+        if(verbose) yError("iDynChain error: setMasses() failed due to wrong vector size: %d instead of %d",(int)_m.size(),N);
         return false;
     }
 }
@@ -938,7 +938,7 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
         prepareNewtonEuler();
     }
 
-    if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3)&&(F0.length()==3)&&(Mu0.length()==3))
+    if((w0.size()==3)&&(dw0.size()==3)&&(ddp0.size()==3)&&(F0.size()==3)&&(Mu0.size()==3))
     {
         if(iterateMode_kinematics == FORWARD)   
             NE->ForwardKinematicFromBase(w0,dw0,ddp0);
@@ -956,7 +956,7 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
         if(verbose)
         {
             yError("iDynChain error: could not compute with Newton Euler due to wrong sized initializing vectors: \n");
-            yError(" w0,dw0,ddp0,Fend,Muend have size %d,%d,%d,%d,%d instead of 3,3,3,3,3 \n",(int)w0.length(),(int)dw0.length(),(int)ddp0.length(),(int)F0.length(),(int)Mu0.length());
+            yError(" w0,dw0,ddp0,Fend,Muend have size %d,%d,%d,%d,%d instead of 3,3,3,3,3 \n",(int)w0.size(),(int)dw0.size(),(int)ddp0.size(),(int)F0.size(),(int)Mu0.size());
         }
         return false;
     }
@@ -1114,7 +1114,7 @@ bool iDynChain::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vecto
         prepareNewtonEuler();
     }
 
-    if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3)&&(Fend.length()==3)&&(Muend.length()==3))
+    if((w0.size()==3)&&(dw0.size()==3)&&(ddp0.size()==3)&&(Fend.size()==3)&&(Muend.size()==3))
     {
         bool ret=true;
 
@@ -1135,7 +1135,7 @@ bool iDynChain::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vecto
         if(verbose)
         {
             yError("iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
-            yError(" w0,dw0,ddp0,Fend,Muend have size %d,%d,%d,%d,%d instead of 3,3,3,3,3 \n",(int)w0.length(),(int)dw0.length(),(int)ddp0.length(),(int)Fend.length(),(int)Muend.length());
+            yError(" w0,dw0,ddp0,Fend,Muend have size %d,%d,%d,%d,%d instead of 3,3,3,3,3 \n",(int)w0.size(),(int)dw0.size(),(int)ddp0.size(),(int)Fend.size(),(int)Muend.size());
         }
         return false;
     }
@@ -1153,7 +1153,7 @@ bool iDynChain::initKinematicNewtonEuler(const Vector &w0, const Vector &dw0, co
         prepareNewtonEuler();
     }
 
-    if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3))
+    if((w0.size()==3)&&(dw0.size()==3)&&(ddp0.size()==3))
     {
         if(iterateMode_kinematics == FORWARD)   
             return NE->initKinematicBase(w0,dw0,ddp0);
@@ -1165,7 +1165,7 @@ bool iDynChain::initKinematicNewtonEuler(const Vector &w0, const Vector &dw0, co
         if(verbose)
         {
             yError("iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
-            yError(" w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3 \n",(int)w0.length(),(int)dw0.length(),(int)ddp0.length());
+            yError(" w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3 \n",(int)w0.size(),(int)dw0.size(),(int)ddp0.size());
         }
         return false;
     }
@@ -1183,7 +1183,7 @@ bool iDynChain::initWrenchNewtonEuler(const Vector &Fend, const Vector &Muend)
         prepareNewtonEuler();
     }
 
-    if((Fend.length()==3)&&(Muend.length()==3))
+    if((Fend.size()==3)&&(Muend.size()==3))
     {
         if(iterateMode_wrench == BACKWARD)  
             return NE->initWrenchEnd(Fend,Muend);
@@ -1195,7 +1195,7 @@ bool iDynChain::initWrenchNewtonEuler(const Vector &Fend, const Vector &Muend)
         if(verbose)
         {
             yError("iDynChain error: could not initialize Newton Euler due to wrong sized initializing vectors: ");
-            yError(" Fend,Muend have size %d,%d instead of 3,3 \n",(int)Fend.length(),(int)Muend.length());
+            yError(" Fend,Muend have size %d,%d instead of 3,3 \n",(int)Fend.size(),(int)Muend.size());
         }
         return false;
     }

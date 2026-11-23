@@ -579,10 +579,11 @@ bool EmbObjSkin::close()
     return true;
 }
 
-size_t EmbObjSkin::getNrOfSkinPatches() const
+yarp::dev::ReturnValue EmbObjSkin::getNrOfSkinPatches(size_t &n) const
 {
     yCDebug(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": n. of enabled skin patches" << _skCfg.numOfPatches;
-    return _skCfg.numOfPatches; //should return the number of patches defined as the parameter `skinCanAddrsPatch1` in the hw configuration file (thus for our boards 1 or 2)
+    n = _skCfg.numOfPatches; //should return the number of patches defined as the parameter `skinCanAddrsPatch1` in the hw configuration file (thus for our boards 1 or 2)
+    return yarp::dev::ReturnValue_ok;
 }
 
 MAS_status EmbObjSkin::getSkinPatchStatus(size_t sens_index) const
@@ -595,25 +596,25 @@ MAS_status EmbObjSkin::getSkinPatchStatus(size_t sens_index) const
     return MAS_OK;
 }
 
-bool EmbObjSkin::getSkinPatchName(size_t sens_index, std::string &name) const
+yarp::dev::ReturnValue EmbObjSkin::getSkinPatchName(size_t sens_index, std::string &name) const
 {
     if(sens_index >= _skCfg.numOfPatches)
     {
         yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": index out of range. Requested:" << sens_index << "max:" << _skCfg.numOfPatches;
-        return false;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     }
 
     name = "skin_patch_" + std::to_string(_skCfg.patchInfoList[sens_index].idPatch);
     yCDebug(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << name;
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
-bool EmbObjSkin::getSkinPatchMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+yarp::dev::ReturnValue EmbObjSkin::getSkinPatchMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
     if(sens_index >= _skCfg.numOfPatches)
     {
         yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": index out of range. Requested:" << sens_index << "max:" << _skCfg.numOfPatches;
-        return false;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     }
 
     const auto& patch = _skCfg.patchInfoList[sens_index];
@@ -625,7 +626,7 @@ bool EmbObjSkin::getSkinPatchMeasure(size_t sens_index, yarp::sig::Vector& out, 
     }
     timestamp = yarp::os::Time::now();
 
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
 size_t EmbObjSkin::getSkinPatchSize(size_t sens_index) const

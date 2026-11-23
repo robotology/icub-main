@@ -235,17 +235,17 @@ protected:
             return;
         }
 
-        for (size_t i=0; i<disp.length(); i++)
+        for (size_t i=0; i<disp.size(); i++)
         {
             double q;
 
-           
+
             if (!enc->getEncoder(offset+i,&q))
             {
                  cerr<<"Error: encoders timed out, cannot rely on encoder feedback, aborted"<<endl;
                  return;
             }
-                
+
             disp[i]=x->getCmd()[i]-q;
 
             if (disp[i]<0.0)
@@ -260,7 +260,7 @@ protected:
         std::vector<double> speeds;
         std::vector<double> positions;
 
-        for (size_t i=0; i<disp.length(); i++)
+        for (size_t i=0; i<disp.size(); i++)
         {
             joints.push_back(offset+i);
             speeds.push_back(disp[i]/time);
@@ -270,21 +270,21 @@ protected:
 
         if (autochange_control_mode_enable)
         {
-            std::vector<yarp::dev::SelectableControlModeEnum> setModes(disp.length(), yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
+            std::vector<yarp::dev::SelectableControlModeEnum> setModes(disp.size(), yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
             mode->setControlModes(joints, setModes);
         }
 
         yarp::os::Time::delay(0.01);  // give time to update control modes value
         mode->getControlModes(joints, modes);
-        for (size_t i=0; i<disp.length(); i++)
+        for (size_t i=0; i<disp.size(); i++)
         {
             if(modes[i] != yarp::dev::ControlModeEnum::VOCAB_CM_POSITION)
             {
                 yError() << "Joint " << i << " not in position mode";
             }
         }
-        pos->setTrajSpeeds(disp.length(), joints.data(), speeds.data());
-        pos->positionMove(disp.length(), joints.data(), positions.data());
+        pos->setTrajSpeeds(disp.size(), joints.data(), speeds.data());
+        pos->positionMove(disp.size(), joints.data(), positions.data());
 
         cout << "Script port: " << x->getCmd().toString() << endl;
     }
@@ -319,7 +319,7 @@ public:
 
         string local=name;
         local+=string("/local/")+string(options.find("part").asString());
-   
+
         drvOptions.put("remote",remote);
         drvOptions.put("local",local);
 
@@ -357,13 +357,13 @@ public:
 
         if (drv->isValid())
             connected=drv->view(mode) &&
-                      drv->view(pos) && 
+                      drv->view(pos) &&
                       drv->view(enc);
         else
             connected=false;
 
         if (!connected)
-        {    
+        {
             delete drv;
             drv=0;
         }
@@ -398,7 +398,7 @@ public:
             return false;
         return true;
     }
-        
+
     void run()
     {
         ActionItem *tmp=posPort->pop();
@@ -422,7 +422,7 @@ private:
     Port           *velPort;
     Port           *velInitPort;
     ResourceFinder *pRF;
-    
+
     ifstream   fin;
     char       line[1024];
     bool       closing;
@@ -435,7 +435,7 @@ private:
     {
 
         if(p->getOutputCount() > 0)
-        {   
+        {
             cout << "***** got a connection" << endl;
             return true;
         }
@@ -469,7 +469,7 @@ private:
             }
             else
                 cont = false;
-        }                
+        }
         if (i==0)
         {
             ret = false;
@@ -506,7 +506,7 @@ private:
     }
 
     bool readLine(Vector &v, double &time)
-    {        
+    {
         fin.getline(&line[0],sizeof(line),'\n');
         string str(line);
 
@@ -520,13 +520,13 @@ private:
                 time=b.get(1).asFloat64();
                 v.resize(b.size()-2);
 
-                for (size_t i=0; i<v.length(); i++)
+                for (size_t i=0; i<v.size(); i++)
                     v[i]=b.get(i+2).asFloat64();
 
                 return true;
             }
             else
-                return false;            
+                return false;
         }
         else
             return false;
@@ -536,7 +536,7 @@ private:
     {
         Vector res;
 
-        for (size_t i=0; i<p.length(); i++)
+        for (size_t i=0; i<p.size(); i++)
         {
             res.push_back(i);
             res.push_back(p[i]);
@@ -550,7 +550,7 @@ private:
 
         if (++filtElemsCnt>VEL_FILT_SIZE)
         {
-            for (size_t i=0; i<p.length(); i++)
+            for (size_t i=0; i<p.size(); i++)
             {
                 res.push_back(1000.0+i);
                 res.push_back(v[i]);
@@ -659,7 +659,7 @@ public:
                     unique_lock<mutex> lck(mtx);
                     cv.wait(lck);
                 }
-    
+
                 if (firstRun)
                 {
                     Bottle c,r;
@@ -670,15 +670,15 @@ public:
                     t=0.0;
                     filtElemsCnt=0;
                     firstRun=false;
-                }            
-    
+                }
+
                 if (send)
                 {
                     Vector cmd=formCommand(p1,t);
                     velPort->write(cmd);
                     send=false;
                 }
-    
+
                 if (readLine(p2,time2))
                 {
                     double dt=time2-time1;
@@ -715,7 +715,7 @@ protected:
     VelocityThread  velThread;
 
 public:
-    scriptModule() 
+    scriptModule()
     {
         verbose=true;
     }
@@ -729,7 +729,7 @@ public:
             posPort.sendNow(action);
             reply.addVocab32("ack");
         }
-        
+
         return ret;
     }
 
@@ -841,7 +841,7 @@ public:
             cerr<<"Error configuring position controller, check parameters"<<endl;
             return false;
         }
-        
+
         if (!posPort.connect())
         {
             cerr<<"Error cannot connect to remote ports"<<endl;
@@ -883,7 +883,7 @@ public:
             switch (command.get(0).asVocab32())
             {
                 case yarp::os::createVocab32('h','e','l','p'):
-                {                    
+                {
                     cout << "Available commands:"          << endl;
                     cout<<"Queue command:\n";
                     cout<<"[ctpq] [time] seconds [off] j [pos] (list)\n";

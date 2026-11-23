@@ -18,6 +18,7 @@
  */
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
+#include <iCub/ctrl/vectorUtils.h>
 #include "math.h"
 #include "memory.h"
 #include "iCub/skinManager/compensationThread.h"
@@ -348,13 +349,13 @@ void CompensationThread::sendMonitorData(){
             int index = 1;
             FOR_ALL_PORTS(i){
                 if(compWorking[i]){
-                    b.setSubvector(index, compensators[i]->getCompensation());
+                    iCub::ctrl::setSubVector(b, index, compensators[i]->getCompensation());
                 }
                 index += compensators[i]->getNumTaxels();
             }
             FOR_ALL_PORTS(i){
                 if(compWorking[i]){
-                    b.setSubvector(index, compensators[i]->getRawData());
+                    iCub::ctrl::setSubVector(b, index, compensators[i]->getRawData());
                 }
                 index += compensators[i]->getNumTaxels();
             }

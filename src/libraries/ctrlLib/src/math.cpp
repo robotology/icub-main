@@ -60,8 +60,8 @@ Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB)
 Vector iCub::ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b,
                           const Vector &Db)
 {    
-    yAssert((a.length()>=3) && (b.length()>=3) &&
-            (Da.length()>=3) && (Db.length()>=3));
+    yAssert((a.size()>=3) && (b.size()>=3) &&
+            (Da.size()>=3) && (Db.size()>=3));
 
     Vector Dv(3);
     Dv[0]=Da[1]*b[2]+a[1]*Db[2]-Da[2]*b[1]-a[2]*Db[1];
