@@ -2,6 +2,7 @@
 #include <cmath>
 #include <utility>
 #include <sstream>
+#include <opencv2/imgproc.hpp>
 #include <yarp/cv/Cv.h>
 #include <yarp/os/LogStream.h>
 #include "stereoCalibThread.h"

@@ -17,6 +17,7 @@
 */
 #include <utility>
 #include <yarp/os/Time.h>
+#include <opencv2/imgproc.hpp>
 #include <yarp/cv/Cv.h>
 #include <iCub/VisuoThread.h>
 

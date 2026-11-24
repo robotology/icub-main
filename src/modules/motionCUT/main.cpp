@@ -26,6 +26,7 @@
 #include <iostream>
 
 #include <opencv2/opencv.hpp>
+#include <opencv2/imgproc.hpp>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
@@ -222,7 +223,7 @@ public:
                         nodesPrev[cnt++]=Point2f((float)x,(float)y);
 
                 // convert to gray-scale
-                cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoPrev),COLOR_BGR2GRAY);
+                cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoPrev),cv::COLOR_BGR2GRAY);
 
                 if (verbosity)
                 {
@@ -236,7 +237,7 @@ public:
             }
 
             // convert the input image to gray-scale
-            cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoIn),COLOR_BGR2GRAY);
+            cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoIn),cv::COLOR_BGR2GRAY);
 
             // copy input image into output image
             ImageOf<PixelBgr> imgBgrOut=*pImgBgrIn;
