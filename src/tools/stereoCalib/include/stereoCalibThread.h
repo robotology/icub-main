@@ -6,10 +6,7 @@
 #include <cstddef>
 #include <deque>
 
-#include <opencv2/calib3d/calib3d_c.h>
 #include <opencv2/calib3d.hpp>
-#include <opencv2/core/core_c.h>
-#include <opencv2/core/types_c.h>
 #include <opencv2/imgcodecs.hpp>
 
 

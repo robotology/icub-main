@@ -20,6 +20,7 @@
  */
 
 #include <utility>
+#include <opencv2/imgproc.hpp>
 #include <yarp/cv/Cv.h>
 #include <iCub/particleFilter.h>
 
@@ -133,7 +134,7 @@ void PARTICLEThread::run()
             }
  
             frame = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 3 );           
-            cv::cvtColor(toCvMat(*iCubImage), cv::cvarrToMat(frame), CV_RGB2BGR);
+            cv::cvtColor(toCvMat(*iCubImage), cv::cvarrToMat(frame), cv::COLOR_RGB2BGR);
             frame_blob = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 1 );
 
             if ( tpl != NULL )
@@ -145,7 +146,7 @@ void PARTICLEThread::run()
                 res_height = height - tpl_height + 1;
                 cvReleaseImage(&temp);
                 temp = cvCreateImage(cvSize(tplMat.size().width,tplMat.size().height),tplMat.depth(),tplMat.channels() );
-                cv::cvtColor(tplMat, cv::cvarrToMat(temp), CV_RGB2BGR);
+                cv::cvtColor(tplMat, cv::cvarrToMat(temp), cv::COLOR_RGB2BGR);
                 gotTemplate = true;
                 firstFrame = true;
                 if (num_objects>0)
@@ -326,7 +327,7 @@ int PARTICLEThread::get_regionsImage( IplImage* frame, CvRect** regions )
 
     res = cvCreateImage( cvSize( res_width, res_height ), IPL_DEPTH_32F, 1 );
 
-    cvMatchTemplate( frame, temp, res, CV_TM_SQDIFF );
+    cvMatchTemplate( frame, temp, res, cv::TM_SQDIFF );
     cvMinMaxLoc( res, &minval, &maxval, &minloc, &maxloc, 0 );
 
     cvReleaseImage( &(p.orig_img) );    //what was the purpose of this image?
@@ -649,7 +650,7 @@ void PARTICLEThread::display_particleBlob( IplImage* img, const PARTICLEThread::
             data[i*step+j] = 0;
         }
     }
-    cvRectangle(img, cvPoint(x0,y0), cvPoint(x1,y1), cvScalar(255,255, 255), CV_FILLED);
+    cvRectangle(img, cvPoint(x0,y0), cvPoint(x1,y1), cvScalar(255,255, 255), cv::FILLED);
 }
 /**********************************************************/
 void PARTICLEThread::trace_template( IplImage* img, const particle &p )
@@ -667,7 +668,7 @@ void PARTICLEThread::trace_template( IplImage* img, const particle &p )
                                                     cvRound(p.s*p.width),
                                                     cvRound(p.s*p.height)));
 
-        cv::cvtColor(imgMat,toCvMat(*t.templ),CV_BGR2RGB);
+        cv::cvtColor(imgMat,toCvMat(*t.templ),cv::COLOR_BGR2RGB);
 
         cvResetImageROI(img);
 
@@ -721,7 +722,7 @@ IplImage* PARTICLEThread::bgr2hsv( IplImage* bgr )
     bgr32f = cvCreateImage( cvGetSize(bgr), IPL_DEPTH_32F, 3 );
     hsv = cvCreateImage( cvGetSize(bgr), IPL_DEPTH_32F, 3 );
     cvConvertScale( bgr, bgr32f, 1.0 / 255.0, 0 );
-    cvCvtColor( bgr32f, hsv, CV_BGR2HSV );
+    cvCvtColor( bgr32f, hsv, cv::COLOR_BGR2HSV );
     cvReleaseImage( &bgr32f );
     return hsv;
 }
