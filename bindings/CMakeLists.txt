@@ -51,7 +51,9 @@ endif("${SWIG_VERSION}" VERSION_LESS "${MIN_SWIG_VERSION}")
 set_source_files_properties(icub.i PROPERTIES CPLUSPLUS ON)
 
 if(CREATE_PYTHON)
-    find_package(Python REQUIRED COMPONENTS Interpreter Development)
+    # Only build an extension module; embedding would also require libpython,
+    # which is optional in conda-forge Python 3.15 and newer.
+    find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
     set(CMAKE_SWIG_FLAGS "-Wall;-module;icub;-threads")
 
     swig_add_library(icub_python
